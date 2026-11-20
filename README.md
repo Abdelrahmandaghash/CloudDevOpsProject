@@ -92,7 +92,7 @@ ansible-inventory --graph      # shows the server found automatically in AWS
 ansible-playbook playbook.yml
 ```
 3. Open `http://JENKINS_IP:8080`. Get the first password with:
-`ssh -i your-key.pem ubuntu@JENKINS_IP "sudo cat /var/lib/jenkins/secrets/initialAdminPassword"`
+`ssh -i ~/ivolve-key.pem ubuntu@JENKINS_IP "sudo cat /var/lib/jenkins/secrets/initialAdminPassword"`
 
 ### Step 5 - Connect to the Kubernetes cluster
 ```
