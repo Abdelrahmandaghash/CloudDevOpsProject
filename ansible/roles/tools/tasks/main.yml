@@ -1,0 +1,36 @@
+- name: Install Docker, Git and AWS CLI
+  apt:
+    name:
+      - docker.io
+      - git
+      - awscli
+    state: present
+
+- name: Download Trivy key
+  get_url:
+    url: https://aquasecurity.github.io/trivy-repo/deb/public.key
+    dest: /usr/share/keyrings/trivy.asc
+
+- name: Add Trivy repository
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/trivy.asc] https://aquasecurity.github.io/trivy-repo/deb {{ ansible_distribution_release }} main"
+    state: present
+
+- name: Install Trivy
+  apt:
+    name: trivy
+    state: present
+    update_cache: true
+
+- name: Start Docker
+  service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Let the jenkins user run Docker
+  user:
+    name: jenkins
+    groups: docker
+    append: true
+  notify: Restart Jenkins

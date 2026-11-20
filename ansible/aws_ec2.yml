@@ -1,0 +1,9 @@
+# Dynamic inventory: Ansible asks AWS for the servers, no IP typing needed.
+plugin: amazon.aws.aws_ec2
+regions:
+  - us-east-1
+filters:
+  tag:Name: jenkins-server
+  instance-state-name: running
+hostnames:
+  - ip-address

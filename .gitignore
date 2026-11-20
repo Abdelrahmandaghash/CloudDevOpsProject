@@ -1,0 +1,10 @@
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.pem
+
+# never commit credentials
+*.csv
+*.key
+.aws/
+credentials

@@ -1,0 +1,12 @@
+# Headless service (clusterIP: None) gives the database pod a stable name
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: ivolve
+spec:
+  clusterIP: None
+  selector:
+    app: mysql
+  ports:
+    - port: 3306

@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: roadmap
+  namespace: ivolve
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: roadmap
+  template:
+    metadata:
+      labels:
+        app: roadmap
+    spec:
+      containers:
+        - name: roadmap
+          image: 020139096861.dkr.ecr.us-east-1.amazonaws.com/roadmap:latest   # Jenkins updates this line
+          ports:
+            - containerPort: 8080      # the Spring Boot server listens on 8080
+          # roadmap-service needs no DB and no config: it returns static roadmap data

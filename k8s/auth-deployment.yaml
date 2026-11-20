@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+  namespace: ivolve
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+        - name: auth
+          image: 020139096861.dkr.ecr.us-east-1.amazonaws.com/auth:latest   # Jenkins updates this line
+          ports:
+            - containerPort: 5000      # the Flask server listens on 5000
+          envFrom:
+            - configMapRef:
+                name: app-config      # DB_HOST / DB_PORT / DB_NAME / DB_USER
+            - secretRef:
+                name: app-secret      # DB_PASSWORD

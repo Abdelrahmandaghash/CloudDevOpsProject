@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: ivolve
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: 020139096861.dkr.ecr.us-east-1.amazonaws.com/frontend:latest   # Jenkins updates this line
+          ports:
+            - containerPort: 3000      # the Node.js server listens on 3000
+          envFrom:
+            - configMapRef:
+                name: app-config      # gives AUTH_SERVICE_URL + ROADMAP_SERVICE_URL

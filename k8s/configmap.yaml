@@ -1,0 +1,16 @@
+# Normal (non-secret) environment variables, shared by the pods via envFrom.
+# Frontend needs the two service URLs; auth-service needs the database connection.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: ivolve
+data:
+  # --- database (used by auth-service) ---
+  DB_HOST: mysql-0.mysql      # pod-name.headless-service-name
+  DB_PORT: "3306"
+  DB_NAME: ivolve
+  DB_USER: root
+  # --- service discovery (used by frontend) ---
+  AUTH_SERVICE_URL: http://auth:5000
+  ROADMAP_SERVICE_URL: http://roadmap:8080

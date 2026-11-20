@@ -1,0 +1,33 @@
+@Library('shared-lib') _
+
+pipeline {
+    agent any
+
+    environment {
+        REGION   = 'us-east-1'
+        REGISTRY = '020139096861.dkr.ecr.us-east-1.amazonaws.com'      // change 020139096861
+        IMAGE    = "${REGISTRY}/roadmap:${BUILD_NUMBER}"
+        REPO     = 'github.com/Abdelrahmandaghash/CloudDevOpsProject.git'  // change Abdelrahmandaghash
+    }
+
+    stages {
+        stage('Build Image') {
+            steps { buildImage(IMAGE, 'app/roadmap-service') }
+        }
+        stage('Scan Image') {
+            steps { scanImage(IMAGE) }
+        }
+        stage('Push Image') {
+            steps { pushImage(IMAGE, REGISTRY, REGION) }
+        }
+        stage('Delete Image Locally') {
+            steps { deleteImage(IMAGE) }
+        }
+        stage('Update Manifests') {
+            steps { updateManifests('k8s/roadmap-deployment.yaml', IMAGE) }
+        }
+        stage('Push Manifests') {
+            steps { pushManifests(REPO) }
+        }
+    }
+}

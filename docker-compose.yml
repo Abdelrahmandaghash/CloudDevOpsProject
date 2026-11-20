@@ -1,0 +1,57 @@
+# Runs the whole app locally: database + auth + roadmap + frontend
+# Start:  docker compose up --build
+# Stop:   docker compose down
+#
+# The real iVolve app has 3 microservices:
+#   frontend        (Node.js / Express)  port 3000  -> UI, calls the two services below
+#   auth-service    (Python / Flask)     port 5000  -> signup/login, the only one using MySQL
+#   roadmap-service (Java / Spring Boot) port 8080  -> returns the DevOps roadmap data
+services:
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: ivolve
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-prootpassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  auth-service:
+    build: ./app/auth-service          # folder that contains the auth-service Dockerfile
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: ivolve
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+    ports:
+      - "5000:5000"                   # debug it directly at http://localhost:5000
+    depends_on:
+      db:
+        condition: service_healthy     # only start after MySQL answers ping
+
+  roadmap-service:
+    build: ./app/roadmap-service       # folder that contains the roadmap-service Dockerfile
+    ports:
+      - "8080:8080"                   # debug it directly at http://localhost:8080/api/roadmap
+    depends_on:
+      - auth-service
+
+  frontend:
+    build: ./app/frontend             # folder that contains the frontend Dockerfile
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:5000
+      ROADMAP_SERVICE_URL: http://roadmap-service:8080
+      SESSION_SECRET: local-dev-secret
+    ports:
+      - "80:3000"                     # open http://localhost  (host 80 -> container 3000)
+    depends_on:
+      - auth-service
+      - roadmap-service
+
+volumes:
+  db-data:
