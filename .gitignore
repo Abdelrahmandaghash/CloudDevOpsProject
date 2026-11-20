@@ -8,3 +8,4 @@
 *.key
 .aws/
 credentials
+terraform/tfplan
