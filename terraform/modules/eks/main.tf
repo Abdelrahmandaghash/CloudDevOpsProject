@@ -58,7 +58,7 @@ resource "aws_eks_node_group" "this" {
   node_group_name = "ivolve-nodes"
   node_role_arn   = aws_iam_role.nodes.arn
   subnet_ids      = var.private_subnet_ids
-  instance_types  = ["t3.medium"]
+  instance_types  = ["t3.small"]
 
   scaling_config {
     desired_size = 2
