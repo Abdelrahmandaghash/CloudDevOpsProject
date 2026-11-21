@@ -1,39 +1,38 @@
 # `terraform/modules/ecr` — container repositories
 
-> One private ECR repository per microservice. Jenkins pushes build images here; Kubernetes pulls
-> from here using the Jenkins EC2 instance role and the EKS node role.
+> One private ECR repository per microservice. Jenkins pushes images here; EKS nodes pull from here.
 
 ## Files
 
 | File | Purpose |
 |------|---------|
 | `variables.tf` | `repo_names` — list of repository names |
-| `main.tf` | `aws_ecr_repository` resource created for every name |
-| `outputs.tf` | `repo_urls` — map of repository name to its URL |
+| `main.tf` | `aws_ecr_repository.repo` with `for_each = toset(var.repo_names)`, `force_delete = true` |
+| `outputs.tf` | `repo_urls` — map of name → `repository_url` |
 
-## Repositories
+## Inputs / Output
 
-The root module passes:
+| Input | Value from root |
+|---|---|
+| `repo_names` | `["frontend", "auth", "roadmap"]` |
 
-```hcl
-repo_names = ["frontend", "auth", "roadmap"]
+| Output | Description |
+|---|---|
+| `repo_urls` | URLs used by the Jenkinsfiles and the Kubernetes Deployments |
+
+`force_delete = true` lets `terraform destroy` remove repositories that still contain images. This is
+convenient for a project environment but unsafe in production.
+
+## How to run
+
+```bash
+terraform -chdir=terraform output ecr_urls
+aws ecr describe-repositories --region us-east-1 \
+  --query 'repositories[].repositoryName' --output table
 ```
-
-`force_delete = true` lets `terraform destroy` remove the repositories even when images remain —
-useful for a project environment, but something to avoid in production.
-
-The resulting URLs look like:
-
-```
-020139096861.dkr.ecr.us-east-1.amazonaws.com/frontend
-020139096861.dkr.ecr.us-east-1.amazonaws.com/auth
-020139096861.dkr.ecr.us-east-1.amazonaws.com/roadmap
-```
-
-These URLs are referenced in the [Jenkinsfiles](../../../jenkins/README.md) and the
-[Kubernetes Deployments](../../../k8s/README.md).
 
 ## Related
 
 - [modules overview](../README.md)
 - [Jenkins push step](../../../vars/README.md)
+- [Image URLs in Deployments](../../../k8s/README.md)

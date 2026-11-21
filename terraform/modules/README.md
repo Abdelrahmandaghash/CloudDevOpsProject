@@ -1,28 +1,37 @@
 # `terraform/modules/` — reusable infrastructure modules
 
-> Four small, independently testable modules composed by [`terraform/main.tf`](../main.tf).
+> Four modules composed by [`terraform/main.tf`](../main.tf). Each has `variables.tf`, `main.tf` and
+> `outputs.tf`.
 
-| Module | Purpose | Key inputs | Key outputs |
-|--------|---------|-----------|-------------|
-| [network/](network/README.md) | VPC, subnets, IGW, NAT, route tables, NACLs | `vpc_cidr`, `azs`, public/private CIDR lists | `vpc_id`, `public_subnet_ids`, `private_subnet_ids` |
-| [server/](server/README.md) | Jenkins EC2, security group, IAM instance profile | `vpc_id`, `subnet_id`, `key_name` | `public_ip` |
-| [eks/](eks/README.md) | EKS cluster, managed node group, EBS CSI IRSA | `cluster_name`, `private_subnet_ids` | `cluster_name` |
-| [ecr/](ecr/README.md) | Container repositories for the three services | `repo_names` | `repo_urls` |
+| Module | Purpose | Inputs | Outputs |
+|---|---|---|---|
+| [network/](network/README.md) | VPC, 4 subnets, IGW, NAT, route tables, NACL | `vpc_cidr`, `azs`, `public_subnet_cidrs`, `private_subnet_cidrs` | `vpc_id`, `public_subnet_ids`, `private_subnet_ids` |
+| [server/](server/README.md) | Jenkins EC2, security group, IAM profile | `vpc_id`, `subnet_id`, `key_name`, `instance_type` | `public_ip` |
+| [eks/](eks/README.md) | EKS cluster, node group, OIDC, IRSA, EBS CSI | `cluster_name`, `private_subnet_ids` | `cluster_name` |
+| [ecr/](ecr/README.md) | Three private repositories | `repo_names` | `repo_urls` |
 
-## Composition in `main.tf`
+## Composition
 
+```mermaid
+flowchart LR
+  AZ[data.aws_availability_zones.available<br/>first 2 names] --> NET[module network]
+  NET -->|vpc_id| SVR[module server]
+  NET -->|public_subnet_ids 0| SVR
+  NET -->|private_subnet_ids| EKS[module eks]
+  SVR -->|public_ip| OUT1[output jenkins_public_ip]
+  EKS -->|cluster_name| OUT3[output eks_cluster_name]
+  ECR[module ecr] -->|repo_urls| OUT2[output ecr_urls]
 ```
-network  ──public_subnet_ids[0]──> server   ──public_ip──> terraform output
-    │
-    └──private_subnet_ids────────> eks      ──cluster_name──> terraform output
 
-repo_names ["frontend","auth","roadmap"] ──> ecr ──repo_urls──> terraform output
+## How to run
+
+You never run a module directly. From `terraform/`:
+
+```bash
+terraform init && terraform validate && terraform plan -var key_name=<KEY_PAIR>
 ```
-
-The availability zones come from the `aws_availability_zones` data source: the first two are used,
-which gives the cluster worker nodes one subnet in each of two AZs.
 
 ## Related
 
 - [terraform overview](../README.md)
-- [Root README](../../README.md)
+- [Root deployment guide](../../README.md)

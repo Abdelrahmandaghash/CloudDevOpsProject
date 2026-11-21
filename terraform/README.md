@@ -1,62 +1,63 @@
 # `terraform/` — AWS infrastructure as code
 
-> Builds the entire cloud environment: VPC and networking, the Jenkins EC2 server, the EKS cluster
-> with two worker nodes, three ECR repositories, and the EBS CSI driver with IRSA. The state file is
-> stored remotely in S3.
+> Creates the entire cloud environment: VPC, Jenkins EC2, EKS cluster, ECR repositories, IAM roles
+> and the EBS CSI driver. State is stored in S3. Full walkthrough:
+> [section 8.3 of the root README](../README.md#83-terraform--aws-infrastructure).
 
 ## Contents
 
 | File | Purpose |
 |------|---------|
-| `backend.tf` | S3 backend configuration: bucket `ivolve-terraform-state-020139096861`, key `cloud-devops-project/terraform.tfstate`, region `us-east-1` |
-| `variables.tf` | `region` (default `us-east-1`) and `key_name` (existing EC2 key pair for SSH) |
-| `main.tf` | AWS provider, availability-zone lookup, and the four module calls |
+| `backend.tf` | S3 backend: bucket `ivolve-terraform-state-020139096861`, key `cloud-devops-project/terraform.tfstate`, region `us-east-1` |
+| `variables.tf` | `region` (default `us-east-1`), `key_name` (existing EC2 key pair, no default) |
+| `main.tf` | Provider `hashicorp/aws ~> 5.0`, AZ data source, four module calls |
 | `outputs.tf` | `jenkins_public_ip`, `ecr_urls`, `eks_cluster_name` |
+| `.terraform.lock.hcl` | Pins provider versions (aws `5.100.0`, tls `4.4.2`) |
 | [modules/](modules/README.md) | [network](modules/network/README.md) · [server](modules/server/README.md) · [eks](modules/eks/README.md) · [ecr](modules/ecr/README.md) |
+
+## Inputs
+
+| Variable | Type / default | Description |
+|---|---|---|
+| `region` | string / `us-east-1` | AWS region for all resources |
+| `key_name` | string / **required** | Name of an existing EC2 key pair used for Jenkins SSH |
+
+## Outputs
+
+| Output | Value |
+|---|---|
+| `jenkins_public_ip` | `module.server.public_ip` |
+| `ecr_urls` | Map of repository name → repository URL |
+| `eks_cluster_name` | `ivolve-cluster` |
 
 ## What gets created
 
-| Resource | Details |
-|----------|---------|
-| VPC | `10.0.0.0/16`, DNS hostnames enabled, named `ivolve-vpc` |
-| Subnets | 2 public (`10.0.1.0/24`, `10.0.2.0/24`) + 2 private (`10.0.3.0/24`, `10.0.4.0/24`) in the first two AZs |
-| Networking | Internet Gateway, one NAT Gateway, public/private route tables, NACLs |
-| Jenkins server | Ubuntu 22.04 EC2 `t3.small`, 20 GB disk, security group allowing SSH (22) and Jenkins (8080), IAM role with ECR power-user access |
-| EKS cluster | `ivolve-cluster` with managed node group `ivolve-nodes`: 2 × `t3.small`, desired = min = max = 2, in private subnets |
-| Storage | `aws-ebs-csi-driver` add-on with an IRSA role for `ebs-csi-controller-sa` |
-| ECR | Repositories `frontend`, `auth`, `roadmap`, with `force_delete = true` |
-| IAM | Cluster, node and CSI service roles with the required AWS managed policies |
+36 resources: VPC `10.0.0.0/16`, 2 public + 2 private subnets, IGW, NAT Gateway, route tables,
+NACL, `jenkins-sg`, IAM roles/instance profile, one `t3.small` EC2, EKS cluster + 2-node group,
+OIDC provider, IRSA role, EBS CSI add-on, and three ECR repositories.
 
-All instance types are **`t3.small`** for free-tier eligibility.
-
-## Usage
-
-Create the S3 bucket (versioning and encryption enabled) and an EC2 key pair first, set the bucket
-name in `backend.tf`, then:
+## How to run
 
 ```bash
 cd terraform
+terraform fmt -check -recursive
 terraform init
 terraform validate
-terraform plan -var key_name=ivolve-key
-terraform apply -var key_name=ivolve-key
-
-# values needed by the next stages:
+terraform plan -var key_name=<KEY_PAIR>
+terraform apply -var key_name=<KEY_PAIR>
 terraform output jenkins_public_ip
 terraform output ecr_urls
 terraform output eks_cluster_name
 ```
 
-Destroy everything at the end:
+Destroy (delete the Ingress first so the ELB is released):
 
 ```bash
-terraform destroy -var key_name=ivolve-key
+terraform destroy -var key_name=<KEY_PAIR>
 ```
-
-The S3 bucket and the key pair are created outside Terraform and are not removed by `destroy`.
 
 ## Related
 
 - [Root README](../README.md)
-- [Ansible configuration](../ansible/README.md) — consumes `jenkins_public_ip`
-- [Kubernetes manifests](../k8s/README.md) — deployed onto `ivolve-cluster`
+- [Ansible](../ansible/README.md) — consumes `jenkins_public_ip`
+- [Architecture deep dive](../docs/architecture.md#2-aws-network)

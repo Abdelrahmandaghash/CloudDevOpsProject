@@ -1,34 +1,39 @@
 # `vars/` — Jenkins shared library
 
-> Reusable pipeline steps shared by all three Jenkinsfiles. Register this folder as a global
-> pipeline library named **`shared-lib`** in Jenkins; each file name becomes a callable function.
+> Reusable pipeline steps shared by all three Jenkinsfiles. Register this repository as a global
+> pipeline library named **`shared-lib`**; each file name becomes a callable step.
 
 ## Functions
 
-| File / function | Signature | What it does |
-|-----------------|-----------|--------------|
-| `buildImage.groovy` | `buildImage(image, folder)` | `docker build -t <image> <folder>` |
-| `scanImage.groovy` | `scanImage(image)` | `trivy image --severity HIGH,CRITICAL <image>` |
-| `pushImage.groovy` | `pushImage(image, registry, region)` | `aws ecr get-login-password … \| docker login …`, then `docker push <image>` |
-| `deleteImage.groovy` | `deleteImage(image)` | `docker rmi <image>` to free disk space on the CI host |
-| `updateManifests.groovy` | `updateManifests(file, image)` | `sed -i 's\|image: .*\|image: <image>\|' <file>` |
-| `pushManifests.groovy` | `pushManifests(githubRepo)` | Commits `k8s/` and pushes to `main` using the `github-creds` credential |
+| File / function | Parameters | Command executed | Purpose |
+|---|---|---|---|
+| `buildImage.groovy` | `image`, `folder` | `docker build -t <image> <folder>` | Build the image from the service folder |
+| `scanImage.groovy` | `image` | `trivy image --severity HIGH,CRITICAL <image>` | Report HIGH/CRITICAL findings |
+| `pushImage.groovy` | `image`, `registry`, `region` | `aws ecr get-login-password … \| docker login …`; `docker push <image>` | Publish to ECR |
+| `deleteImage.groovy` | `image` | `docker rmi <image>` | Free disk on the Jenkins host |
+| `updateManifests.groovy` | `file`, `image` | `sed -i 's\|image: .*\|image: <image>\|' <file>` | Point the Deployment at the new tag |
+| `pushManifests.groovy` | `githubRepo` | `git config …`; `git add k8s`; `git commit -m "Update image from Jenkins build ${BUILD_NUMBER}"`; `git push https://${GIT_USER}:${GIT_TOKEN}@<repo> HEAD:main` | Hand off to ArgoCD |
+
+## Inputs / outputs
+
+- **Inputs:** the parameters above, environment `BUILD_NUMBER`, credential ID `github-creds`, and the
+  tools installed by the [Ansible `tools` role](../ansible/roles/tools/README.md).
+- **Outputs:** one ECR image and one Git commit per pipeline run.
 
 ## Authentication
 
-`pushManifests.groovy` wraps a `withCredentials([usernamePassword(...)])` block:
+`pushManifests.groovy` uses `withCredentials([usernamePassword(credentialsId: 'github-creds',
+usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')])`. Credential ID must match exactly.
+Commit identity is `jenkins / jenkins@ivolve.com`.
 
-- credential ID: **`github-creds`** (must match exactly),
-- username variable `GIT_USER`, password variable `GIT_TOKEN` (a GitHub PAT with `repo` scope),
-- commit identity: `jenkins / jenkins@ivolve.com`,
-- commit message: `Update image from Jenkins build ${env.BUILD_NUMBER}`,
-- push target: `https://${GIT_USER}:${GIT_TOKEN}@<repo> HEAD:main`.
+> **Security note:** the PAT is interpolated into the `git push` URL. Hide console output or move to
+> a credential helper/SSH key in a production setup. See
+> [Security considerations](../README.md#11-security-considerations).
 
-That push is the hand-off to ArgoCD: it sees a new manifest on `main` and syncs the cluster.
+## How to test
 
-## Tools assumed on the Jenkins host
-
-Docker, Trivy and the AWS CLI — all installed by the [Ansible `tools` role](../ansible/roles/tools/README.md).
+There are no unit tests for the library. Validate a change by running one Jenkins job and checking
+that all six stages pass and a commit appears in `k8s/`.
 
 ## Related
 

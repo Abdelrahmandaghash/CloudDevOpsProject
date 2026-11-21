@@ -1,18 +1,25 @@
 # `ansible/roles/java` — Java runtime
 
-> Installs the Java runtime required by Jenkins.
+> Installs the runtime required by Jenkins. A code comment records why: Jenkins packages built after
+> Oct 2026 require Java 21 (older versions fail with "older than the minimum required version
+> (Java 21)").
 
 ## Contents
 
 | File | Purpose |
 |------|---------|
-| `tasks/main.yml` | Installs `openjdk-21-jre` with `update_cache: yes`, state `present` |
+| `tasks/main.yml` | `apt: name=openjdk-21-jre state=present update_cache=true` |
 
-## Details
+## Inputs / output
 
-Current Jenkins releases require **Java 21** or newer. The role uses `openjdk-21-jre` (runtime only —
-the Jenkins war ships with what it needs). The task is idempotent: re-running the playbook reports
-`ok` rather than reinstalling.
+- **Input:** `become: true` from the playbook (apt needs root).
+- **Output:** `openjdk-21-jre` present; `java -version` reports 21.
+
+## How to verify
+
+```bash
+ssh -i ~/ivolve-key.pem ubuntu@<JENKINS_PUBLIC_IP> "java -version"
+```
 
 ## Related
 

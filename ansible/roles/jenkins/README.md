@@ -1,34 +1,44 @@
 # `ansible/roles/jenkins` — Jenkins installation
 
-> Adds the official Jenkins apt repository with the current signing key, installs Jenkins, clears any
-> latched systemd start-limit state, and makes sure the service is running and enabled at boot.
+> Adds the official Jenkins apt repository with the **2026** signing key, installs Jenkins, clears any
+> latched systemd start-limit state, then starts and enables the service.
 
 ## Contents
 
 | File | Purpose |
 |------|---------|
-| `tasks/main.yml` | GPG key download, apt repository, package install, systemd reset, service start/enable |
+| `tasks/main.yml` | 5 ordered tasks (see below) |
 
 ## Tasks in order
 
-1. Download `https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key` to
-   `/usr/share/keyrings/jenkins-keyring.asc` with `force: true`.
-2. Add `deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/`
-   to `/etc/apt/sources.list.d/jenkins.list`.
-3. Install the `jenkins` package.
-4. Run `systemctl reset-failed jenkins` (`changed_when: false`) to clear systemd's
-   `StartLimitBurst=5 / 5m` latch before the first start.
-5. Ensure service `jenkins` is **started** and **enabled**.
+1. `get_url` → `https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key` to
+   `/usr/share/keyrings/jenkins-keyring.asc` with `force: true`. The comment explains the 2023 key
+   expired 2026-03-26 and caused `NO_PUBKEY 7198F4B714ABFC68`.
+2. `apt_repository` → `deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/`
+3. `apt` → package `jenkins`, `update_cache: true`
+4. `command: systemctl reset-failed jenkins`, `changed_when: false` — clears `StartLimitBurst=5 / 5m`
+5. `service: name=jenkins state=started enabled=true`
 
-The key download uses `force: true` so re-running the playbook always refreshes the signing key.
+## Inputs / outputs
 
-## Result
+- **Inputs:** Java 21 from the `java` role; root privileges from the playbook.
+- **Outputs:** Jenkins listening on **8080**, enabled at boot, initial admin password at
+  `/var/lib/jenkins/secrets/initialAdminPassword`.
 
-Jenkins listens on port **8080**; the initial admin password is at
-`/var/lib/jenkins/secrets/initialAdminPassword` on the server.
+## How to verify
+
+```bash
+ssh -i ~/ivolve-key.pem ubuntu@<JENKINS_PUBLIC_IP> \
+  "systemctl is-active jenkins; sudo cat /var/lib/jenkins/secrets/initialAdminPassword"
+curl -I http://<JENKINS_PUBLIC_IP>:8080
+```
+
+> The exact Jenkins package version is not pinned in this repository — it is whatever
+> `pkg.jenkins.io/debian-stable` serves at install time. `TODO: record the installed Jenkins version
+> in your project report (evidence capture shows 2.580.2).`
 
 ## Related
 
 - [roles overview](../README.md)
-- [java role](../java/README.md) — installed first
-- [tools role](../tools/README.md) — adds Docker access for the `jenkins` user
+- [java role](../java/README.md)
+- [tools role](../tools/README.md)

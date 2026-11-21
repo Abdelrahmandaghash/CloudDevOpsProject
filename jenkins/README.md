@@ -1,65 +1,53 @@
 # `jenkins/` — continuous integration pipelines
 
-> One Jenkins Pipeline per microservice. All three use the same reusable stages from the
-> [`vars/`](../vars/README.md) shared library, build an image per build number, scan it with Trivy,
-> push it to ECR and publish the new tag back to GitHub for ArgoCD.
+> One Jenkins Pipeline per microservice. All three call the same six stages from the
+> [`vars/`](../vars/README.md) shared library. Full walkthrough:
+> [section 8.6 of the root README](../README.md#86-jenkins-ci--pipelines-and-shared-library).
 
 ## Contents
 
-| Folder | Build context | ECR repository | Manifest updated |
-|--------|---------------|----------------|------------------|
-| [frontend/](frontend/README.md) | `app/frontend` | `frontend` | `k8s/frontend-deployment.yaml` |
-| [auth/](auth/README.md) | `app/auth-service` | `auth` | `k8s/auth-deployment.yaml` |
-| [roadmap/](roadmap/README.md) | `app/roadmap-service` | `roadmap` | `k8s/roadmap-deployment.yaml` |
+| Folder | Script path | Build context | ECR repository | Manifest updated |
+|---|---|---|---|---|
+| [frontend/](frontend/README.md) | `jenkins/frontend/Jenkinsfile` | `app/frontend` | `frontend` | `k8s/frontend-deployment.yaml` |
+| [auth/](auth/README.md) | `jenkins/auth/Jenkinsfile` | `app/auth-service` | `auth` | `k8s/auth-deployment.yaml` |
+| [roadmap/](roadmap/README.md) | `jenkins/roadmap/Jenkinsfile` | `app/roadmap-service` | `roadmap` | `k8s/roadmap-deployment.yaml` |
 
-## Pipeline stages
+## The six stages
 
-Every Jenkinsfile runs the same six stages:
+| # | Stage | Shared step | Effect |
+|---:|---|---|---|
+| 1 | Build Image | `buildImage(IMAGE, FOLDER)` | `docker build -t <ECR>/<service>:<BUILD_NUMBER> <folder>` |
+| 2 | Scan Image | `scanImage(IMAGE)` | `trivy image --severity HIGH,CRITICAL <image>` |
+| 3 | Push Image | `pushImage(IMAGE, REGISTRY, REGION)` | ECR login + `docker push` |
+| 4 | Delete Image Locally | `deleteImage(IMAGE)` | `docker rmi` frees disk on the CI host |
+| 5 | Update Manifests | `updateManifests(FILE, IMAGE)` | `sed` replaces the `image:` line |
+| 6 | Push Manifests | `pushManifests(REPO)` | `git add k8s`, commit, push `HEAD:main` |
 
-| # | Stage | Shared-library step | Result |
-|---|-------|--------------------|--------|
-| 1 | Build Image | `buildImage` | Docker image tagged `<ECR>/<service>:<BUILD_NUMBER>` |
-| 2 | Scan Image | `scanImage` | Trivy reports HIGH/CRITICAL findings |
-| 3 | Push Image | `pushImage` | ECR login via AWS CLI, then `docker push` |
-| 4 | Delete Image Locally | `deleteImage` | Frees disk space on the Jenkins host |
-| 5 | Update Manifests | `updateManifests` | `sed` replaces the `image:` line in the service Deployment |
-| 6 | Push Manifests | `pushManifests` | Git commit + push to `main`, using `github-creds` |
+## Inputs (per Jenkinsfile)
 
-## Environment in every Jenkinsfile
+| Variable | Example value in the files |
+|---|---|
+| `REGION` | `us-east-1` |
+| `REGISTRY` | `020139096861.dkr.ecr.us-east-1.amazonaws.com` — **replace with your account** |
+| `IMAGE` | `${REGISTRY}/<service>:${BUILD_NUMBER}` |
+| `REPO` | `github.com/Abdelrahmandaghash/CloudDevOpsProject.git` — **replace with your repo** |
 
-```groovy
-@Library('shared-lib') _
-REGION   = 'us-east-1'
-REGISTRY = '020139096861.dkr.ecr.us-east-1.amazonaws.com'
-IMAGE    = "${REGISTRY}/<service>:${BUILD_NUMBER}"
-REPO     = 'github.com/Abdelrahmandaghash/CloudDevOpsProject.git'
-```
+## Outputs
 
-The image tag is the **Jenkins build number**, so each deployment maps to a specific CI run.
+| Output | Consumer |
+|---|---|
+| Image in ECR tagged with the build number | EKS nodes via the Deployments |
+| Git commit changing `k8s/<service>-deployment.yaml` | ArgoCD `ivolve-app` |
 
-## Job setup in Jenkins
+## How to run
 
-Create three *Pipeline* jobs named `frontend`, `auth`, `roadmap`, each
-*Pipeline script from SCM → Git → this repository*, with the Script Path pointing at the matching
-`jenkins/<service>/Jenkinsfile`. Register the shared library as **`shared-lib`** in
-*Manage Jenkins → System → Global Trusted Pipeline Libraries*, and add a username/password
-credential with ID **`github-creds`** containing your GitHub user and a PAT with `repo` scope.
-
-## End-to-end flow
-
-```
-git push / Build Now
-        │
-        ▼
-Jenkins: build → scan → push ECR → update k8s YAML → push to GitHub
-                                                          │
-                                                          ▼
-                                     ArgoCD auto-sync → EKS rolling update
-```
+1. Register the shared library as **`shared-lib`** (this repository, branch `main`).
+2. Add credential ID **`github-creds`** (*Username with password*, PAT with `repo` scope).
+3. Create three *Pipeline* jobs with *Pipeline script from SCM* and the script paths above.
+4. Click **Build Now** on each job; check the Stage View for six green stages.
 
 ## Related
 
 - [Root README](../README.md)
-- [Ansible configuration](../ansible/README.md) — installs Docker, Trivy, AWS CLI on the Jenkins host
 - [Shared library](../vars/README.md)
-- [Kubernetes manifests](../k8s/README.md)
+- [Ansible tooling role](../ansible/roles/tools/README.md)

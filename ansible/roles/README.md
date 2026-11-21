@@ -1,22 +1,28 @@
 # `ansible/roles/` — configuration roles
 
-> Three focused roles applied in order by [`playbook.yml`](../playbook.yml).
+> Three roles applied in order by [`playbook.yml`](../playbook.yml).
 
-| Order | Role | Responsibility |
-|-------|------|----------------|
-| 1 | [java/](java/README.md) | Install Java 21 (required by current Jenkins packages) |
-| 2 | [jenkins/](jenkins/README.md) | Add the Jenkins apt repo with its current signing key, install, reset systemd state, start & enable |
-| 3 | [tools/](tools/README.md) | Install Docker, Git, AWS CLI and Trivy; start Docker; grant Jenkins Docker access |
+| Order | Role | Responsibility | Key tasks / output |
+|---:|---|---|---|
+| 1 | [java/](java/README.md) | Java runtime | Installs `openjdk-21-jre` — required by current Jenkins packages |
+| 2 | [jenkins/](jenkins/README.md) | Jenkins installation | 2026 signing key, apt repo, package, `systemctl reset-failed`, start + enable; UI on 8080 |
+| 3 | [tools/](tools/README.md) | Build & security tooling | `docker.io`, `git`, `awscli`, Trivy repo + package, Docker service, `jenkins` in `docker` group |
 
-Each role follows standard Ansible layout with a `tasks/main.yml`; `tools` also has a
-`handlers/main.yml` used to restart Jenkins after its group membership changes.
+Each role follows standard Ansible layout with `tasks/main.yml`; `tools` also has
+`handlers/main.yml` to restart Jenkins after its group membership changes.
 
-## Applying them
+## Inputs / outputs
+
+- **Inputs:** the discovered host from `aws_ec2.yml`, `become: true`, and the SSH key in `ansible.cfg`.
+- **Outputs:** Java 21 installed, Jenkins service active and enabled, Docker active and enabled,
+  Trivy and AWS CLI available to the `jenkins` user.
+
+## How to run
 
 ```bash
 cd ..
-ansible-playbook playbook.yml --tags java      # individual role if tagged
-ansible-playbook playbook.yml                  # all three, in order
+ansible-playbook --syntax-check -i 'localhost,' playbook.yml
+ansible-playbook playbook.yml
 ```
 
 ## Related
