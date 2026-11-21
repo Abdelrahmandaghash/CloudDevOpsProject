@@ -18,6 +18,12 @@
     state: present
     update_cache: true
 
+# Clears systemd's start rate-limit (StartLimitBurst=5 / 5m) left over from
+# previous failed starts, so a re-run can start the service again.
+- name: Reset Jenkins failed state
+  command: systemctl reset-failed jenkins
+  changed_when: false
+
 - name: Start Jenkins
   service:
     name: jenkins
