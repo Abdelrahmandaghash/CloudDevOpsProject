@@ -5,8 +5,6 @@
 
 Original application source: https://github.com/Ibrahim-Adel15/iVolveFinalProject.git
 
-![Architecture](../docs/images/project-architecture.png)
-
 ---
 
 ## 📁 Project Structure

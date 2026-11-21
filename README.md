@@ -1,4 +1,4 @@
-# 🌐 End-to-End GitOps CI/CD Pipeline on AWS
+# <img src="app/frontend/public/images/ivolve-logo.png" alt="iVolve" width="72" /> CloudDevOpsProject — iVolve on EKS
 
 A comprehensive end-to-end CI/CD infrastructure for the **iVolve DevOps training platform**. This project leverages **Terraform** for AWS infrastructure provisioning, **Ansible** for automated configuration management, **Docker** for containerization, **Jenkins** for continuous integration, **Trivy** for image scanning, and **ArgoCD** for GitOps-based deployment to **Amazon EKS**.
 
@@ -6,9 +6,9 @@ A comprehensive end-to-end CI/CD infrastructure for the **iVolve DevOps training
 
 ## Project Architecture
 
-![Architecture](docs/images/project-architecture.png)
+![Architecture](docs/images/project-architecture.svg)
 
-> Editable source: [project-architecture.svg](docs/images/project-architecture.svg) · Detailed diagrams: [docs/architecture.md](docs/architecture.md)
+> Detailed diagrams: [docs/architecture.md](docs/architecture.md)
 
 ---
 

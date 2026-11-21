@@ -4,8 +4,6 @@
 > The target host is discovered from AWS at run time. Full walkthrough:
 > [section 4 of the root README](../README.md#4-ansible--configure-the-jenkins-server).
 
-![Architecture](../docs/images/project-architecture.png)
-
 ---
 
 ## 📁 Project Structure

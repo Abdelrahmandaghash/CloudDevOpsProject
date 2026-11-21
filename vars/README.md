@@ -3,8 +3,6 @@
 > Reusable pipeline steps shared by all three Jenkinsfiles. Register this repository as a global
 > pipeline library named **`shared-lib`**; each file name becomes a callable step.
 
-![Architecture](../docs/images/project-architecture.png)
-
 ---
 
 ## 🧩 Functions

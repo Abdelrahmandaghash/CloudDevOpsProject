@@ -4,8 +4,6 @@
 > [`vars/`](../vars/README.md) shared library. Full walkthrough:
 > [section 6 of the root README](../README.md#6-jenkins-ci--pipelines-and-shared-library).
 
-![Architecture](../docs/images/project-architecture.png)
-
 ---
 
 ## 📁 Project Structure

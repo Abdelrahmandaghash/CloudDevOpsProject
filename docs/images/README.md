@@ -13,13 +13,12 @@ This folder is the image library used by the documentation. Every image embedded
 
 ## 🏗️ Architecture Diagram
 
-The end-to-end architecture illustration is embedded in the [root README](../../README.md) and the main
-component READMEs. Keep the editable SVG as the source of truth and export the PNG whenever it changes.
+The end-to-end architecture illustration is embedded directly in the [root README](../../README.md).
+Only the SVG is kept here; it is the single source for the diagram.
 
 | Exact filename | Format | Purpose |
 |---|---|---|
-| `project-architecture.svg` | Editable SVG | Source diagram — grouped draw.io/AWS-style view of the real project stack |
-| `project-architecture.png` | PNG (1600 × 1075) | Rendered image embedded by `README.md` and the component READMEs |
+| `project-architecture.svg` | Editable SVG | Architecture diagram shown in `README.md` |
 
 ---
 

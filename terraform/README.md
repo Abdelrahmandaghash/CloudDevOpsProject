@@ -4,8 +4,6 @@
 > and the EBS CSI driver. State is stored in S3. Full walkthrough:
 > [section 3 of the root README](../README.md#3-terraform--aws-infrastructure).
 
-![Architecture](../docs/images/project-architecture.png)
-
 ---
 
 ## 📁 Project Structure

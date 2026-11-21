@@ -4,8 +4,6 @@
 > [`argocd/application.yaml`](../argocd/application.yaml) points at `path: k8s`. Full explanation:
 > [section 5 of the root README](../README.md#5-kubernetes--manifests-and-exposure).
 
-![Architecture](../docs/images/project-architecture.png)
-
 ---
 
 ## 📁 Project Structure

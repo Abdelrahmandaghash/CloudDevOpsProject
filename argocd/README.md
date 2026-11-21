@@ -4,8 +4,6 @@
 > namespace, automatically and continuously. Full walkthrough:
 > [section 7 of the root README](../README.md#7-argocd--gitops-delivery).
 
-![Architecture](../docs/images/project-architecture.png)
-
 ---
 
 ## 📁 Project Structure
