@@ -16,6 +16,8 @@
 **Status:** deployed end-to-end and verified live — `terraform apply` → Ansible `failed=0` → 3 green Jenkins
 pipelines → ArgoCD `Synced / Healthy` → app reachable through the ingress Load Balancer.
 
+![iVolve app running on EKS](Screenshots/13-app-login-page.png)
+
 ---
 
 ## Table of contents
@@ -93,12 +95,12 @@ pipelines → ArgoCD `Synced / Healthy` → app reachable through the ingress Lo
 |---|----------------|----------------------------|----------|
 | **1** | GitHub repository with README, link delivered | this repository + [`README.md`](README.md) | the repo itself |
 | **2** | Docker Compose builds & tests the app + DB locally | [`docker-compose.yml`](docker-compose.yml) + [`app/`](app/) | [Run locally](#run-it-locally-docker-compose) |
-| **3** | Terraform: network, server, EKS (2 nodes / 2 AZs), ECR, S3 backend | [`terraform/`](terraform/) — modules `network`, `server`, `eks`, `ecr` + `backend.tf` | ![01](Screenshots/01-terraform-apply-complete.png) |
-| **4** | Ansible: roles + dynamic inventory for the Jenkins EC2 | [`ansible/`](ansible/) — roles `java`, `jenkins`, `tools` + `aws_ec2.yml` | ![02](Screenshots/02-ansible-playbook-success.png) |
-| **5** | K8s: namespace, Deployments, Services, StatefulSet, headless Service, StorageClass, ConfigMap, Secret, Ingress | [`k8s/`](k8s/) — 13 YAML files | ![04](Screenshots/04-eks-nodes-ready.png) ![12](Screenshots/12-ingress-elb-and-pods.png) |
-| **6** | Jenkins: pipeline per service, multi-stage, shared library | [`jenkins/*/Jenkinsfile`](jenkins/) + [`vars/`](vars/) | ![06](Screenshots/06-jenkins-jobs-all-green.png) |
-| **7** | ArgoCD syncs & deploys the app | [`argocd/application.yaml`](argocd/application.yaml) | ![11](Screenshots/11-argocd-application-healthy.png) |
-| **8** | Documentation: setup + architecture | this README + [`Screenshots/`](Screenshots/) gallery | ![13](Screenshots/13-app-login-page.png) |
+| **3** | Terraform: network, server, EKS (2 nodes / 2 AZs), ECR, S3 backend | [`terraform/`](terraform/) — modules `network`, `server`, `eks`, `ecr` + `backend.tf` | [`01`](Screenshots/01-terraform-apply-complete.png) [`03`](Screenshots/03-ecr-repositories.png) [`04`](Screenshots/04-eks-nodes-ready.png) |
+| **4** | Ansible: roles + dynamic inventory for the Jenkins EC2 | [`ansible/`](ansible/) — roles `java`, `jenkins`, `tools` + `aws_ec2.yml` | [`02`](Screenshots/02-ansible-playbook-success.png) |
+| **5** | K8s: namespace, Deployments, Services, StatefulSet, headless Service, StorageClass, ConfigMap, Secret, Ingress | [`k8s/`](k8s/) — 13 YAML files | [`05`](Screenshots/05-ingress-nginx-running.png) [`12`](Screenshots/12-ingress-elb-and-pods.png) |
+| **6** | Jenkins: pipeline per service, multi-stage, shared library | [`jenkins/*/Jenkinsfile`](jenkins/) + [`vars/`](vars/) | [`06`](Screenshots/06-jenkins-jobs-all-green.png) [`07`](Screenshots/07-pipeline-frontend.png) [`08`](Screenshots/08-pipeline-auth.png) [`09`](Screenshots/09-pipeline-roadmap.png) |
+| **7** | ArgoCD syncs & deploys the app | [`argocd/application.yaml`](argocd/application.yaml) | [`10`](Screenshots/10-argocd-install.png) [`11`](Screenshots/11-argocd-application-healthy.png) |
+| **8** | Documentation: setup + architecture | this README + [`Screenshots/`](Screenshots/) gallery | [`13`](Screenshots/13-app-login-page.png) [`14`](Screenshots/14-troubleshooting-gpg-failure.png) [`15`](Screenshots/15-troubleshooting-free-tier-error.png) |
 
 > Full screenshot gallery: [`Screenshots/`](Screenshots/) — 15 numbered evidence images, referenced step by step below.
 
