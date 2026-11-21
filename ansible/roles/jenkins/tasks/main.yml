@@ -1,7 +1,11 @@
+# NOTE: Jenkins rotates this key every ~3 years. The 2023 key expired
+# 2026-03-26 and made apt fail with NO_PUBKEY 7198F4B714ABFC68.
+# The repo Release file is now signed by jenkins.io-2026.key.
 - name: Download Jenkins key
   get_url:
-    url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+    url: https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key
     dest: /usr/share/keyrings/jenkins-keyring.asc
+    force: true
 
 - name: Add Jenkins repository
   apt_repository:
