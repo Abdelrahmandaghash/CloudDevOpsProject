@@ -19,7 +19,7 @@ component READMEs. Keep the editable SVG as the source of truth and export the P
 | Exact filename | Format | Purpose |
 |---|---|---|
 | `project-architecture.svg` | Editable SVG | Source diagram — grouped draw.io/AWS-style view of the real project stack |
-| `project-architecture.png` | PNG (1600 × 900) | Rendered image embedded by `README.md` and the component READMEs |
+| `project-architecture.png` | PNG (1600 × 1075) | Rendered image embedded by `README.md` and the component READMEs |
 
 ---
 
