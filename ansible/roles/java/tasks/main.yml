@@ -1,5 +1,7 @@
-- name: Install Java 17
+# NOTE: Jenkins packages built after Oct 2026 require Java 21 minimum
+# (startup fails with "older than the minimum required version (Java 21)").
+- name: Install Java 21
   apt:
-    name: openjdk-17-jre
+    name: openjdk-21-jre
     state: present
     update_cache: true
