@@ -1,9 +1,11 @@
-# `app/frontend/` — Node.js web UI
+# 🖥️ Frontend — Node.js Web UI
 
 > Express + EJS frontend on port **3000**. It renders the login/signup pages and the authenticated
 > roadmap page, and proxies API calls to `auth` and `roadmap`.
 
-## Contents
+---
+
+## 📁 Project Structure
 
 | File | Purpose |
 |------|---------|
@@ -16,7 +18,9 @@
 | `public/css/style.css` | Dark-theme responsive styling: auth card, navigation, 4/2/1-column grid |
 | `public/images/` | `ivolve-logo.png`, `nti-logo.png` |
 
-## Configuration
+---
+
+## ⚙️ Configuration
 
 | Environment variable | Default | Description |
 |----------------------|---------|-------------|
@@ -24,7 +28,9 @@
 | `ROADMAP_SERVICE_URL` | `http://localhost:8080` | Base URL of the roadmap API (`http://roadmap:8080` in Kubernetes) |
 | `SESSION_SECRET` | `change-me-in-k8s` | Secret used to sign the session cookie (httpOnly, 1 hour) |
 
-## Routes
+---
+
+## 🧭 Routes
 
 | Route | Method | Behaviour |
 |-------|--------|-----------|
@@ -36,7 +42,9 @@
 
 When an upstream service fails, the server renders `views/error.ejs` with status 503.
 
-## Run
+---
+
+## 🚀 How to Run
 
 ```bash
 npm install
@@ -47,7 +55,9 @@ npm start
 
 Or use the [root Docker Compose](../../docker-compose.yml), which supplies all variables.
 
-## Related
+---
+
+## 🔗 Related
 
 - [app overview](../README.md)
 - [auth service](../auth-service/README.md)

@@ -1,8 +1,10 @@
-# `src/main/java/` — Java source tree
+# ☕ Java Source Tree
 
 > Java packages for the Spring Boot application, rooted at `com/ivolve/roadmap`.
 
-## Contents
+---
+
+## 📁 Project Structure
 
 | Folder | Purpose |
 |--------|---------|
@@ -10,7 +12,9 @@
 
 The package structure matches `com.ivolve:roadmap-service` from `pom.xml`.
 
-## Related
+---
+
+## 🔗 Related
 
 - [main sources](../README.md)
 - [roadmap service overview](../../../README.md)

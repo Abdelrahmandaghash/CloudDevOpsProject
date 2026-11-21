@@ -1,8 +1,10 @@
-# `roles/java/tasks/` — Java installation tasks
+# 📝 Java Role Tasks
 
 > The single task list for the `java` role.
 
-## Contents
+---
+
+## 📁 Project Structure
 
 | File | Purpose |
 |------|---------|
@@ -11,7 +13,9 @@
 Ansible loads `main.yml` automatically when the role is included by `playbook.yml`; no other task
 files are needed.
 
-## Related
+---
+
+## 🔗 Related
 
 - [java role](../README.md)
 - [roles overview](../../README.md)

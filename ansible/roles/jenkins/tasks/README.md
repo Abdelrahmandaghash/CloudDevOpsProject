@@ -1,8 +1,10 @@
-# `roles/jenkins/tasks/` — Jenkins installation tasks
+# 📝 Jenkins Role Tasks
 
 > Ordered task list for the `jenkins` role: signing key → apt repository → package → systemd → service.
 
-## Contents
+---
+
+## 📁 Project Structure
 
 | File | Purpose |
 |------|---------|
@@ -11,7 +13,9 @@
 The key is stored at `/usr/share/keyrings/jenkins-keyring.asc` and referenced by the repository line
 with `signed-by=`. The reset step clears systemd's failed-start rate limit before the first launch.
 
-## Related
+---
+
+## 🔗 Related
 
 - [jenkins role](../README.md)
 - [roles overview](../../README.md)

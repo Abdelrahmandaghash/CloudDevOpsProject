@@ -1,10 +1,14 @@
-# `terraform/` — AWS infrastructure as code
+# 🏗️ Terraform — AWS Infrastructure as Code
 
 > Creates the entire cloud environment: VPC, Jenkins EC2, EKS cluster, ECR repositories, IAM roles
 > and the EBS CSI driver. State is stored in S3. Full walkthrough:
-> [section 8.3 of the root README](../README.md#83-terraform--aws-infrastructure).
+> [section 3 of the root README](../README.md#3-terraform--aws-infrastructure).
 
-## Contents
+![Architecture](../docs/images/project-architecture.png)
+
+---
+
+## 📁 Project Structure
 
 | File | Purpose |
 |------|---------|
@@ -15,14 +19,18 @@
 | `.terraform.lock.hcl` | Pins provider versions (aws `5.100.0`, tls `4.4.2`) |
 | [modules/](modules/README.md) | [network](modules/network/README.md) · [server](modules/server/README.md) · [eks](modules/eks/README.md) · [ecr](modules/ecr/README.md) |
 
-## Inputs
+---
+
+## ✅ Inputs
 
 | Variable | Type / default | Description |
 |---|---|---|
 | `region` | string / `us-east-1` | AWS region for all resources |
 | `key_name` | string / **required** | Name of an existing EC2 key pair used for Jenkins SSH |
 
-## Outputs
+---
+
+## 📤 Outputs
 
 | Output | Value |
 |---|---|
@@ -30,13 +38,17 @@
 | `ecr_urls` | Map of repository name → repository URL |
 | `eks_cluster_name` | `ivolve-cluster` |
 
-## What gets created
+---
+
+## 🧱 What Gets Created
 
 36 resources: VPC `10.0.0.0/16`, 2 public + 2 private subnets, IGW, NAT Gateway, route tables,
 NACL, `jenkins-sg`, IAM roles/instance profile, one `t3.small` EC2, EKS cluster + 2-node group,
 OIDC provider, IRSA role, EBS CSI add-on, and three ECR repositories.
 
-## How to run
+---
+
+## 🚀 How to Run
 
 ```bash
 cd terraform
@@ -56,8 +68,23 @@ Destroy (delete the Ingress first so the ELB is released):
 terraform destroy -var key_name=<KEY_PAIR>
 ```
 
-## Related
+---
+
+## 🔗 Related
 
 - [Root README](../README.md)
 - [Ansible](../ansible/README.md) — consumes `jenkins_public_ip`
 - [Architecture deep dive](../docs/architecture.md#2-aws-network)
+
+---
+
+## 👨‍💻 Author
+
+**Abdelrahman Daghash**  
+Cloud DevOps Engineer — NTI DevOps Training Program, iVolve Technologies
+
+## 📬 Contact
+
+- 🐙 [GitHub](https://github.com/Abdelrahmandaghash)
+- 📧 3bdelrahmandaghash@gmail.com
+- 🔗 [Project repository](https://github.com/Abdelrahmandaghash/CloudDevOpsProject)

@@ -2,7 +2,7 @@
 
 > Practical fixes for the failures you are most likely to see while rebuilding this stack. Commands
 > are read-only unless the fix explicitly says to apply/destroy something. For a short summary table,
-> see [section 13 of the root README](../README.md#13-troubleshooting).
+> see the [Troubleshooting & Lessons Learned section of the root README](../README.md#-troubleshooting--lessons-learned).
 
 ---
 
@@ -487,4 +487,4 @@ issue (browser blocking httpOnly cookies).
 
 **Fix:** check browser cookie settings first. For a durable fix, add `SESSION_SECRET` to
 `app-secret` and include `secretRef: app-secret` in the frontend Deployment — see
-[Security considerations](../README.md#11-security-considerations).
+[Security considerations](../README.md#-security-notes).

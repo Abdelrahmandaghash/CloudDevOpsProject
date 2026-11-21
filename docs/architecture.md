@@ -135,7 +135,7 @@ flowchart TB
 | Egress | 100 | `-1` (all) | 0–65535 | `0.0.0.0/0` | allow |
 
 > The NACL is deliberately permissive; the declarative filtering is done by `jenkins-sg`. See the
-> [Security considerations](../README.md#11-security-considerations) section for the recommended
+> [Security considerations](../README.md#-security-notes) section for the recommended
 > hardening.
 
 ![ECR repositories](images/03-ecr-repositories.png)
@@ -238,7 +238,7 @@ flowchart TB
 5. The auth service writes to `mysql-0.mysql:3306`; MySQL data lives on a 1 Gi EBS volume.
 6. The session cookie is signed by `SESSION_SECRET`. The Deployment does not inject that variable,
    so the application uses its built-in default — see
-   [Security considerations](../README.md#11-security-considerations).
+   [Security considerations](../README.md#-security-notes).
 
 ![Ingress and login](images/15-app-login-page.png)
 ![Roadmap page](images/16-app-roadmap-page.png)
@@ -299,5 +299,5 @@ flowchart TB
 
 - [Screenshot gallery index](../Screenshots/README.md)
 - [Screenshot capture manifest](images/README.md)
-- [Step-by-step build guide](../README.md#step-by-step-deployment-guide)
+- [Step-by-step build guide](../README.md#-step-by-step-deployment)
 - [Troubleshooting](troubleshooting.md)

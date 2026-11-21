@@ -1,4 +1,4 @@
-# `docs/images/` — documentation screenshot manifest
+# 🖼️ Documentation Images — Screenshot Manifest
 
 This folder is the image library used by the documentation. Every image embedded in the
 [root README](../../README.md) or in [architecture.md](../architecture.md) is listed below with the
@@ -11,7 +11,19 @@ This folder is the image library used by the documentation. Every image embedded
 
 ---
 
-## Required captures
+## 🏗️ Architecture Diagram
+
+The end-to-end architecture illustration is embedded in the [root README](../../README.md) and the main
+component READMEs. Keep the editable SVG as the source of truth and export the PNG whenever it changes.
+
+| Exact filename | Format | Purpose |
+|---|---|---|
+| `project-architecture.svg` | Editable SVG | Source diagram — grouped draw.io/AWS-style view of the real project stack |
+| `project-architecture.png` | PNG (1600 × 900) | Rendered image embedded by `README.md` and the component READMEs |
+
+---
+
+## 📸 Required Captures
 
 | # | Exact filename | What it must show | Capture from |
 |---:|---|---|---|
@@ -34,7 +46,7 @@ This folder is the image library used by the documentation. Every image embedded
 
 ---
 
-## Optional evidence (not embedded)
+## 📸 Optional Evidence
 
 These are useful for a reviewer but are not required by the documentation. Add them with the exact
 filenames below if you have time.
@@ -50,7 +62,7 @@ filenames below if you have time.
 | `23-pod-env-config.png` | Non-secret environment injected into the `auth` pod | `kubectl exec -n ivolve deploy/auth -- env \| grep DB_` |
 | `24-cost-explorer.png` | Daily cost after the stack was up | AWS Console → Cost Explorer |
 | `25-destroy-complete.png` | `terraform destroy` completing with `Destroy complete!` | `terraform destroy -var key_name=<KEY_PAIR>` |
-| `26-github-repository.png` | GitHub repository landing page showing the folder list and rendered README — used as the placeholder in [section 8.1](../../README.md#81-github-repository-setup) | Browser → `https://github.com/<YOUR_USER>/CloudDevOpsProject` |
+| `26-github-repository.png` | GitHub repository landing page showing the folder list and rendered README — used as the placeholder in [section 1](../../README.md#1-github-repository-setup) | Browser → `https://github.com/<YOUR_USER>/CloudDevOpsProject` |
 
 > **Do not capture** the raw contents of `k8s/secret.yaml`, the Jenkins credential values, the ArgoCD
 > initial admin password, or a GitHub PAT. Redact them in any terminal recording.

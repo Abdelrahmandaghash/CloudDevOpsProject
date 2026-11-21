@@ -2,7 +2,7 @@
 
 > There is no `docker/` folder in this repository — the Compose file lives at the repository root as
 > [`docker-compose.yml`](../docker-compose.yml). This page is the short folder-style reference for it.
-> The full line-by-line walkthrough is in [section 8.2 of the root README](../README.md#82-docker--local-container-stack).
+> The full line-by-line walkthrough is in [section 2 of the root README](../README.md#2-docker--local-container-stack).
 
 ## Purpose
 
@@ -62,4 +62,4 @@ The Compose file contains hard-coded **development-only** values for `MYSQL_ROOT
 `DB_PASSWORD` and `SESSION_SECRET` (shown here only as `<DB_PASSWORD>` / `<SESSION_SECRET>`). They
 are suitable for local use only. Never copy them into the Kubernetes manifests or a production
 environment, and move them to an untracked `.env` file; see
-[Security considerations](../README.md#11-security-considerations).
+[Security considerations](../README.md#-security-notes).

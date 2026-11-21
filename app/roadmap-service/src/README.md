@@ -1,8 +1,10 @@
-# `src/` — Maven source root
+# 📁 Maven Source Root
 
 > Standard Maven source tree for the Spring Boot roadmap service.
 
-## Contents
+---
+
+## 📁 Project Structure
 
 | Folder | Purpose |
 |--------|---------|
@@ -11,6 +13,8 @@
 There are no test sources in this project. The Dockerfile builds the application with
 `mvn clean package -DskipTests`, which produces `roadmap-service-1.0.0.jar`.
 
-## Related
+---
+
+## 🔗 Related
 
 - [roadmap service overview](../README.md)

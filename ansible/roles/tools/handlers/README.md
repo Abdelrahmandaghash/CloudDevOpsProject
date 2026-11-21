@@ -1,8 +1,10 @@
-# `roles/tools/handlers/` — Ansible handlers
+# 🔄 Tools Role Handlers
 
 > Handlers run only when a task notifies them.
 
-## Contents
+---
+
+## 📁 Project Structure
 
 | File | Purpose |
 |------|---------|
@@ -11,7 +13,9 @@
 Because the role notifies this handler at the end of the play, Jenkins picks up its new group
 membership in the same run instead of requiring a manual restart.
 
-## Related
+---
+
+## 🔗 Related
 
 - [tools role](../README.md)
 - [tools tasks](../tasks/README.md)

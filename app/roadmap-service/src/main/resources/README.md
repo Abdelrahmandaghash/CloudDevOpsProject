@@ -1,8 +1,10 @@
-# `src/main/resources/` — Spring Boot configuration
+# ⚙️ Spring Boot Resources
 
 > Runtime configuration packaged inside the application jar.
 
-## Contents
+---
+
+## 📁 Project Structure
 
 | File | Purpose |
 |------|---------|
@@ -10,7 +12,9 @@
 
 No database or external service configuration is needed: this service only returns static roadmap data.
 
-## Related
+---
+
+## 🔗 Related
 
 - [main sources](../README.md)
 - [roadmap service overview](../../../README.md)

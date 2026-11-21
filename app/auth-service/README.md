@@ -1,9 +1,11 @@
-# `app/auth-service/` — Python authentication API
+# 🔐 Auth Service — Python Authentication API
 
 > Flask service on port **5000**. It is the only microservice that talks to MySQL: it creates the
 > `users` table, hashes passwords with bcrypt, and exposes signup/login/health endpoints.
 
-## Contents
+---
+
+## 📁 Project Structure
 
 | File | Purpose |
 |------|---------|
@@ -11,7 +13,9 @@
 | `requirements.txt` | Pinned dependencies: `Flask==3.1.1`, `mysql-connector-python==9.4.0`, `bcrypt==4.3.0` |
 | `app.py` | Flask application: DB connection with startup retry, schema creation, API endpoints |
 
-## Configuration
+---
+
+## ⚙️ Configuration
 
 All settings are read from environment variables and validated at startup:
 
@@ -26,7 +30,9 @@ All settings are read from environment variables and validated at startup:
 The service retries the MySQL connection up to **30 times with a 2-second gap**, so it can start
 before the database healthcheck passes.
 
-## API
+---
+
+## 🔌 API Surface
 
 | Method | Path | Responses |
 |--------|------|-----------|
@@ -36,7 +42,9 @@ before the database healthcheck passes.
 
 The `users` table has `id`, a unique `username`, a bcrypt `password_hash` and `created_at`.
 
-## Run
+---
+
+## 🚀 How to Run
 
 ```bash
 pip install -r requirements.txt
@@ -46,7 +54,9 @@ python app.py
 
 Or use the [root Docker Compose](../../docker-compose.yml), which supplies all variables.
 
-## Related
+---
+
+## 🔗 Related
 
 - [app overview](../README.md)
 - [frontend](../frontend/README.md)

@@ -1,8 +1,10 @@
-# `jenkins/roadmap/Jenkinsfile` — roadmap pipeline
+# 🗺️ Roadmap CI Pipeline
 
 > Builds and ships the Java/Spring Boot roadmap service, then updates its Deployment in GitHub.
 
-## Configuration
+---
+
+## ⚙️ Configuration
 
 | Setting | Value |
 |---------|-------|
@@ -12,7 +14,9 @@
 | Image tag | `${BUILD_NUMBER}` |
 | Manifest updated | `k8s/roadmap-deployment.yaml` |
 
-## Stages
+---
+
+## 🧱 Stages
 
 1. **Build Image** — `buildImage(env.IMAGE, 'app/roadmap-service')`
 2. **Scan Image** — `scanImage(env.IMAGE)`
@@ -23,7 +27,9 @@
 
 The multi-stage Dockerfile performs the Maven build, so the pipeline itself only needs Docker.
 
-## Related
+---
+
+## 🔗 Related
 
 - [pipelines overview](../README.md)
 - [roadmap source](../../app/roadmap-service/README.md)

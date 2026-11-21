@@ -1,8 +1,10 @@
-# `jenkins/frontend/Jenkinsfile` — frontend pipeline
+# 🖥️ Frontend CI Pipeline
 
 > Builds and ships the Node.js frontend image, then updates the frontend Deployment in GitHub.
 
-## Configuration
+---
+
+## ⚙️ Configuration
 
 | Setting | Value |
 |---------|-------|
@@ -12,7 +14,9 @@
 | Image tag | `${BUILD_NUMBER}` |
 | Manifest updated | `k8s/frontend-deployment.yaml` |
 
-## Stages
+---
+
+## 🧱 Stages
 
 1. **Build Image** — `buildImage(env.IMAGE, 'app/frontend')`
 2. **Scan Image** — `scanImage(env.IMAGE)`
@@ -23,7 +27,9 @@
 
 The resulting `image:` line in the Deployment points at the ECR URL with the number of this build.
 
-## Related
+---
+
+## 🔗 Related
 
 - [pipelines overview](../README.md)
 - [frontend source](../../app/frontend/README.md)

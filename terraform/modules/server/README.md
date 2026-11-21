@@ -1,9 +1,11 @@
-# `terraform/modules/server` — Jenkins EC2 server
+# 🖥️ Terraform Server Module — Jenkins EC2
 
 > Creates the CI host: Ubuntu 22.04 `t3.small`, 20 GB disk, SSH and Jenkins ports open, and an IAM
 > instance profile that can push to ECR without stored AWS keys.
 
-## Files
+---
+
+## 📄 Files
 
 | File | Purpose |
 |------|---------|
@@ -11,7 +13,9 @@
 | `main.tf` | AMI data source, `jenkins-sg`, IAM role/policy/profile, EC2 instance |
 | `outputs.tf` | `public_ip` |
 
-## Inputs
+---
+
+## ✅ Inputs
 
 | Variable | Source in `main.tf` |
 |---|---|
@@ -20,13 +24,17 @@
 | `key_name` | root variable `-var key_name=<KEY_PAIR>` |
 | `instance_type` | default `t3.small` (do not change for free tier) |
 
-## Output
+---
+
+## 📤 Outputs
 
 | Output | Used by |
 |---|---|
 | `public_ip` | `terraform/outputs.tf` → `jenkins_public_ip` → Ansible / Jenkins UI URL |
 
-## Resources and rules
+---
+
+## 🧱 Resources and Rules
 
 | Resource | Details |
 |---|---|
@@ -40,14 +48,18 @@
 The `Name=jenkins-server` tag is what [`ansible/aws_ec2.yml`](../../../ansible/aws_ec2.yml) filters
 on. The public IP changes after every `apply` — never hard-code it.
 
-## How to run
+---
+
+## 🚀 How to Run
 
 ```bash
 terraform -chdir=terraform output jenkins_public_ip
 ssh -i <KEY_PAIR>.pem ubuntu@<JENKINS_PUBLIC_IP>
 ```
 
-## Related
+---
+
+## 🔗 Related
 
 - [modules overview](../README.md)
 - [Ansible configuration](../../../ansible/README.md)

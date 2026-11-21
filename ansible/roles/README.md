@@ -1,4 +1,4 @@
-# `ansible/roles/` — configuration roles
+# 🧱 Ansible Roles — Configuration Management
 
 > Three roles applied in order by [`playbook.yml`](../playbook.yml).
 
@@ -11,13 +11,17 @@
 Each role follows standard Ansible layout with `tasks/main.yml`; `tools` also has
 `handlers/main.yml` to restart Jenkins after its group membership changes.
 
+---
+
 ## Inputs / outputs
 
 - **Inputs:** the discovered host from `aws_ec2.yml`, `become: true`, and the SSH key in `ansible.cfg`.
 - **Outputs:** Java 21 installed, Jenkins service active and enabled, Docker active and enabled,
   Trivy and AWS CLI available to the `jenkins` user.
 
-## How to run
+---
+
+## 🚀 How to Run
 
 ```bash
 cd ..
@@ -25,7 +29,9 @@ ansible-playbook --syntax-check -i 'localhost,' playbook.yml
 ansible-playbook playbook.yml
 ```
 
-## Related
+---
+
+## 🔗 Related
 
 - [Ansible overview](../README.md)
 - [Root deployment guide](../../README.md)

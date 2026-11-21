@@ -1,10 +1,12 @@
-# `Screenshots/` — deployment evidence
+# 📸 Deployment Evidence — Screenshot Gallery
 
 > Numbered captures taken while the project was deployed, kept here as proof of each stage of the
 > pipeline. They follow the real order of work, from infrastructure to the running application.
 > The main README does not embed them; this file is their index.
 
-## Gallery index
+---
+
+## 🖼️ Gallery Index
 
 | # | File | What it shows |
 |---|------|---------------|
@@ -28,6 +30,8 @@
 All 16 captures are numbered consecutively and stored in this folder; no raw or rejected images are
 included.
 
-## Related
+---
+
+## 🔗 Related
 
 - [Root README](../README.md)

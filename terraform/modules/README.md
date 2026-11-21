@@ -1,4 +1,4 @@
-# `terraform/modules/` — reusable infrastructure modules
+# 🧱 Terraform Modules — Reusable Infrastructure
 
 > Four modules composed by [`terraform/main.tf`](../main.tf). Each has `variables.tf`, `main.tf` and
 > `outputs.tf`.
@@ -10,7 +10,9 @@
 | [eks/](eks/README.md) | EKS cluster, node group, OIDC, IRSA, EBS CSI | `cluster_name`, `private_subnet_ids` | `cluster_name` |
 | [ecr/](ecr/README.md) | Three private repositories | `repo_names` | `repo_urls` |
 
-## Composition
+---
+
+## 🧱 Composition
 
 ```mermaid
 flowchart LR
@@ -23,7 +25,9 @@ flowchart LR
   ECR[module ecr] -->|repo_urls| OUT2[output ecr_urls]
 ```
 
-## How to run
+---
+
+## 🚀 How to Run
 
 You never run a module directly. From `terraform/`:
 
@@ -31,7 +35,9 @@ You never run a module directly. From `terraform/`:
 terraform init && terraform validate && terraform plan -var key_name=<KEY_PAIR>
 ```
 
-## Related
+---
+
+## 🔗 Related
 
 - [terraform overview](../README.md)
 - [Root deployment guide](../../README.md)

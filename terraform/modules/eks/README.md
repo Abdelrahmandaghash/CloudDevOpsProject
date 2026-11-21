@@ -1,9 +1,11 @@
-# `terraform/modules/eks` — EKS cluster, nodes and storage
+# ☸️ Terraform EKS Module — Cluster, Nodes and Storage
 
 > Creates `ivolve-cluster`, a fixed 2-node group in the private subnets, the cluster OIDC provider,
 > and an IRSA role for the EBS CSI controller so MySQL can get an EBS disk.
 
-## Files
+---
+
+## 📄 Files
 
 | File | Purpose |
 |------|---------|
@@ -11,7 +13,9 @@
 | `main.tf` | IAM roles, cluster, node group, OIDC provider, IRSA trust, EBS CSI add-on |
 | `outputs.tf` | `cluster_name` |
 
-## Inputs / Output
+---
+
+## ✅ Inputs and Outputs
 
 | Input | Source |
 |---|---|
@@ -22,7 +26,9 @@
 |---|---|
 | `cluster_name` | `aws_eks_cluster.this.name` |
 
-## Resources
+---
+
+## 🧱 Resources
 
 | Resource | Details |
 |---|---|
@@ -34,7 +40,9 @@
 | `aws_iam_role.ebs_csi` | `ebs-csi-controller-role`, trusts SA `kube-system:ebs-csi-controller-sa` |
 | `aws_eks_addon.ebs_csi` | `aws-ebs-csi-driver`, `service_account_role_arn` = IRSA role, depends on node group |
 
-## How to run
+---
+
+## 🚀 How to Run
 
 ```bash
 terraform -chdir=terraform output eks_cluster_name
@@ -43,7 +51,9 @@ kubectl get nodes
 kubectl get pods -n kube-system | grep ebs-csi
 ```
 
-## Related
+---
+
+## 🔗 Related
 
 - [modules overview](../README.md)
 - [StorageClass and StatefulSet](../../../k8s/README.md)

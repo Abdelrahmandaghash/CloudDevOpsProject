@@ -1,10 +1,14 @@
-# `ansible/` — Jenkins server configuration
+# ⚙️ Ansible — Jenkins Server Configuration
 
 > Turns the fresh Jenkins EC2 into a CI server: Java 21, Jenkins, Docker, Git, AWS CLI and Trivy.
 > The target host is discovered from AWS at run time. Full walkthrough:
-> [section 8.4 of the root README](../README.md#84-ansible--configure-the-jenkins-server).
+> [section 4 of the root README](../README.md#4-ansible--configure-the-jenkins-server).
 
-## Contents
+![Architecture](../docs/images/project-architecture.png)
+
+---
+
+## 📁 Project Structure
 
 | File | Purpose |
 |------|---------|
@@ -13,7 +17,9 @@
 | `playbook.yml` | One play, `hosts: all`, `become: true`, roles in order `java → jenkins → tools` |
 | [roles/](roles/README.md) | [java](roles/java/README.md) · [jenkins](roles/jenkins/README.md) · [tools](roles/tools/README.md) |
 
-## Inputs (what you must supply)
+---
+
+## ✅ Inputs
 
 | Input | Where | Notes |
 |---|---|---|
@@ -23,7 +29,9 @@
 | Private key | `ansible.cfg` → `private_key_file` | Change the hard-coded path to your own PEM; `chmod 400` |
 | EC2 tag | Terraform sets `Name=jenkins-server` | Inventory filter matches it exactly |
 
-## Outputs (what you get)
+---
+
+## 📤 Outputs
 
 | Result | How to see it |
 |---|---|
@@ -32,7 +40,9 @@
 | Jenkins UI on port 8080 | `http://<JENKINS_PUBLIC_IP>:8080` |
 | `jenkins` user in the `docker` group | `id jenkins` on the host |
 
-## How to run
+---
+
+## 🚀 How to Run
 
 ```bash
 ansible-playbook --syntax-check -i 'localhost,' playbook.yml   # read-only check
@@ -42,8 +52,23 @@ ssh -i ~/ivolve-key.pem ubuntu@<JENKINS_PUBLIC_IP> \
   "sudo cat /var/lib/jenkins/secrets/initialAdminPassword"
 ```
 
-## Related
+---
+
+## 🔗 Related
 
 - [Root README](../README.md)
 - [Terraform server module](../terraform/modules/server/README.md)
 - [Jenkins pipelines](../jenkins/README.md)
+
+---
+
+## 👨‍💻 Author
+
+**Abdelrahman Daghash**  
+Cloud DevOps Engineer — NTI DevOps Training Program, iVolve Technologies
+
+## 📬 Contact
+
+- 🐙 [GitHub](https://github.com/Abdelrahmandaghash)
+- 📧 3bdelrahmandaghash@gmail.com
+- 🔗 [Project repository](https://github.com/Abdelrahmandaghash/CloudDevOpsProject)

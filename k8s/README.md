@@ -1,10 +1,14 @@
-# `k8s/` — Kubernetes manifests
+# ☸️ Kubernetes — Manifests and GitOps Source of Truth
 
 > All 13 manifests for the `ivolve` namespace. This folder is the **GitOps source of truth**:
 > [`argocd/application.yaml`](../argocd/application.yaml) points at `path: k8s`. Full explanation:
-> [section 8.5 of the root README](../README.md#85-kubernetes--manifests-and-exposure).
+> [section 5 of the root README](../README.md#5-kubernetes--manifests-and-exposure).
 
-## Contents
+![Architecture](../docs/images/project-architecture.png)
+
+---
+
+## 📁 Project Structure
 
 | File | Resource | Key details |
 |---|---|---|
@@ -22,12 +26,16 @@
 | `roadmap-service.yaml` | Service `roadmap` | port 8080 → targetPort 8080 |
 | `ingress.yaml` | Ingress `frontend-ingress` | `ingressClassName: nginx`, path `/` → `frontend:3000` |
 
+---
+
 ## Inputs / outputs
 
 - **Inputs:** the EBS CSI add-on and OIDC/IRSA role from Terraform; the `ebs-sc` StorageClass;
   ConfigMap/Secret values.
 - **Outputs:** four running workloads, three ClusterIP Services, a 1 Gi PVC, and one public ingress
   address.
+
+---
 
 ## Apply order
 
@@ -43,13 +51,30 @@ kubectl get all,pvc,ingress -n ivolve
 
 Namespace → config/storage → StatefulSet/headless Service → Deployments/Services → Ingress.
 
-## How data persists
+---
+
+## 💾 Data Persistence
 
 `StatefulSet` → `volumeClaimTemplates[data]` → PVC `data-mysql-0` (1 Gi, `ebs-sc`) → EBS disk created
 by `ebs.csi.aws.com`. The `subPath: mysql` mount avoids the `lost+found` initialisation error.
 
-## Related
+---
+
+## 🔗 Related
 
 - [Root README](../README.md)
 - [ArgoCD application](../argocd/README.md)
 - [Kubernetes architecture diagram](../docs/architecture.md#4-kubernetes-workload-layout)
+
+---
+
+## 👨‍💻 Author
+
+**Abdelrahman Daghash**  
+Cloud DevOps Engineer — NTI DevOps Training Program, iVolve Technologies
+
+## 📬 Contact
+
+- 🐙 [GitHub](https://github.com/Abdelrahmandaghash)
+- 📧 3bdelrahmandaghash@gmail.com
+- 🔗 [Project repository](https://github.com/Abdelrahmandaghash/CloudDevOpsProject)

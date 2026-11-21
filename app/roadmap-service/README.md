@@ -1,9 +1,11 @@
-# `app/roadmap-service/` — Java DevOps roadmap API
+# 🗺️ Roadmap Service — Java DevOps Roadmap API
 
 > Spring Boot service on port **8080**. It exposes one read-only endpoint returning the eight DevOps
 > roadmap topics rendered by the frontend. It has no database dependency.
 
-## Contents
+---
+
+## 📁 Project Structure
 
 | File | Purpose |
 |------|---------|
@@ -16,7 +18,9 @@
 The multi-stage Dockerfile produces `roadmap-service-1.0.0.jar`, copied into the runtime image as
 `app.jar` and started with `java -jar app.jar`.
 
-## API
+---
+
+## 🔌 API Surface
 
 `GET /api/roadmap` returns eight items in learning order:
 
@@ -29,20 +33,25 @@ The multi-stage Dockerfile produces `roadmap-service-1.0.0.jar`, copied into the
 7. Infrastructure as Code
 8. Configuration Management
 
-## Run locally
+---
+
+## 🚀 How to Run
 
 ```bash
 mvn clean package -DskipTests
 java -jar target/roadmap-service-1.0.0.jar
 
-# or build the container
+# 🗺️ Roadmap Service — Java DevOps Roadmap API
+
 docker build -t ivolve-roadmap .
 ```
 
 Kubernetes needs no environment variables for this service — only the image tag in
 `k8s/roadmap-deployment.yaml`, which Jenkins maintains.
 
-## Related
+---
+
+## 🔗 Related
 
 - [app overview](../README.md)
 - [frontend](../frontend/README.md)

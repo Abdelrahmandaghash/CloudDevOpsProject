@@ -1,8 +1,10 @@
-# `jenkins/auth/Jenkinsfile` — auth pipeline
+# 🔐 Auth CI Pipeline
 
 > Builds and ships the Python/Flask authentication service, then updates its Deployment in GitHub.
 
-## Configuration
+---
+
+## ⚙️ Configuration
 
 | Setting | Value |
 |---------|-------|
@@ -12,7 +14,9 @@
 | Image tag | `${BUILD_NUMBER}` |
 | Manifest updated | `k8s/auth-deployment.yaml` |
 
-## Stages
+---
+
+## 🧱 Stages
 
 1. **Build Image** — `buildImage(env.IMAGE, 'app/auth-service')`
 2. **Scan Image** — `scanImage(env.IMAGE)`
@@ -21,7 +25,9 @@
 5. **Update Manifests** — `updateManifests('k8s/auth-deployment.yaml', env.IMAGE)`
 6. **Push Manifests** — `pushManifests(env.REPO)` with credential `github-creds`
 
-## Related
+---
+
+## 🔗 Related
 
 - [pipelines overview](../README.md)
 - [auth source](../../app/auth-service/README.md)

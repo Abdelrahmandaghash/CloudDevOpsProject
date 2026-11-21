@@ -1,8 +1,10 @@
-# `app/frontend/views/` — EJS templates
+# 📄 Frontend EJS Views
 
 > Server-rendered pages for the Express frontend, rendered with `res.render(...)`.
 
-## Contents
+---
+
+## 📁 Project Structure
 
 | File | Rendered for | Purpose |
 |------|--------------|---------|
@@ -13,7 +15,9 @@
 All templates load `/css/style.css` and the logos from `/images/`. Session data supplied by
 `server.js` decides whether a visitor sees the auth form or the roadmap.
 
-## Related
+---
+
+## 🔗 Related
 
 - [frontend overview](../README.md)
 - [static assets](../public/README.md)

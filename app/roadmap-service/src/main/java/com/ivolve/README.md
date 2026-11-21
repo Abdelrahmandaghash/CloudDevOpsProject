@@ -1,14 +1,18 @@
-# `java/com/ivolve/` — organisation package
+# 📦 Organisation Java Package
 
 > Middle level of the `com.ivolve.roadmap` package hierarchy.
 
-## Contents
+---
+
+## 📁 Project Structure
 
 | Folder | Purpose |
 |--------|---------|
 | [`roadmap/`](roadmap/README.md) | The application package containing both Java classes |
 
-## Related
+---
+
+## 🔗 Related
 
 - [top-level package](../README.md)
 - [roadmap service overview](../../../../../README.md)

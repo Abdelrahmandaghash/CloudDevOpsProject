@@ -1,9 +1,11 @@
-# `terraform/modules/network` — VPC and networking
+# 🌐 Terraform Network Module — VPC and Subnets
 
 > Builds `ivolve-vpc` (`10.0.0.0/16`), two public and two private subnets, IGW, NAT, route tables and
 > a permissive NACL. See [AWS network](../../../docs/architecture.md#2-aws-network).
 
-## Files
+---
+
+## 📄 Files
 
 | File | Purpose |
 |------|---------|
@@ -11,7 +13,9 @@
 | `main.tf` | VPC, subnets, IGW, EIP + NAT, route tables, associations, NACL |
 | `outputs.tf` | `vpc_id`, `public_subnet_ids`, `private_subnet_ids` |
 
-## Inputs
+---
+
+## ✅ Inputs
 
 | Variable | Type | Value from root module |
 |---|---|---|
@@ -20,7 +24,9 @@
 | `public_subnet_cidrs` | list(string) | `["10.0.1.0/24", "10.0.2.0/24"]` |
 | `private_subnet_cidrs` | list(string) | `["10.0.3.0/24", "10.0.4.0/24"]` |
 
-## Outputs
+---
+
+## 📤 Outputs
 
 | Output | Description |
 |---|---|
@@ -28,7 +34,9 @@
 | `public_subnet_ids` | Ids of `public-subnet-1`, `public-subnet-2` |
 | `private_subnet_ids` | Ids of `private-subnet-1`, `private-subnet-2` |
 
-## Resources and rules
+---
+
+## 🧱 Resources and Rules
 
 | Resource | Details |
 |---|---|
@@ -41,7 +49,9 @@
 | `aws_route_table.private` | `0.0.0.0/0 → nat` |
 | `aws_network_acl.main` | Ingress/egress rule 100, protocol `-1`, `0.0.0.0/0`, allow; attached to all four subnets |
 
-## How to run
+---
+
+## 🚀 How to Run
 
 Called only from `terraform/main.tf`:
 
@@ -49,7 +59,9 @@ Called only from `terraform/main.tf`:
 terraform -chdir=terraform plan -var key_name=<KEY_PAIR>
 ```
 
-## Related
+---
+
+## 🔗 Related
 
 - [modules overview](../README.md)
 - [Root terraform configuration](../../README.md)

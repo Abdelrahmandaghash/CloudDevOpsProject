@@ -1,8 +1,10 @@
-# `public/images/` — logo assets
+# 🖼️ Frontend Logo Assets
 
 > Images embedded in the login and roadmap pages.
 
-## Contents
+---
+
+## 📁 Project Structure
 
 | File | Purpose |
 |------|---------|
@@ -11,7 +13,9 @@
 
 Both are served statically at `/images/<filename>` and referenced from the EJS templates.
 
-## Related
+---
+
+## 🔗 Related
 
 - [static assets](../README.md)
 - [EJS views](../../views/README.md)

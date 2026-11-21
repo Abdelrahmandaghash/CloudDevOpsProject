@@ -1,16 +1,22 @@
-# `argocd/` — GitOps application
+# 🚀 ArgoCD — GitOps Continuous Deployment
 
 > One manifest that tells ArgoCD to deploy everything in `k8s/` from GitHub into the `ivolve`
 > namespace, automatically and continuously. Full walkthrough:
-> [section 8.7 of the root README](../README.md#87-argocd--gitops-delivery).
+> [section 7 of the root README](../README.md#7-argocd--gitops-delivery).
 
-## Contents
+![Architecture](../docs/images/project-architecture.png)
+
+---
+
+## 📁 Project Structure
 
 | File | Purpose |
 |------|---------|
 | `application.yaml` | ArgoCD `Application` resource `ivolve-app` in namespace `argocd` |
 
-## Application specification (inputs)
+---
+
+## ⚙️ Application Specification
 
 | Field | Value in the file |
 |---|---|
@@ -25,7 +31,9 @@
 | `spec.syncPolicy.automated.prune` | `true` |
 | `spec.syncPolicy.automated.selfHeal` | `true` |
 
-## Outputs (what you get)
+---
+
+## 📤 Outputs
 
 | Result | Check |
 |---|---|
@@ -33,7 +41,9 @@
 | Automatic drift correction | scale a Deployment manually and watch ArgoCD revert it |
 | Git commit → deployment | pipeline push appears as a new sync in the UI |
 
-## How to run
+---
+
+## 🚀 How to Run
 
 ```bash
 kubectl create namespace argocd
@@ -41,15 +51,31 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 kubectl apply -f argocd/application.yaml
 kubectl get application ivolve-app -n argocd
 kubectl port-forward svc/argocd-server -n argocd 8081:443
-# second terminal — do not paste this password into docs or tickets:
+# 🚀 ArgoCD — GitOps Continuous Deployment
+
 kubectl -n argocd get secret argocd-initial-admin-secret \
   -o jsonpath='{.data.password}' | base64 -d; echo
 ```
 
 Open `https://localhost:8081`, user `admin`. Expected status: **Synced** and **Healthy**.
 
-## Related
+---
+
+## 🔗 Related
 
 - [Root README](../README.md)
 - [Kubernetes manifests](../k8s/README.md)
 - [GitOps sequence diagram](../docs/architecture.md#3-cicd-sequence)
+
+---
+
+## 👨‍💻 Author
+
+**Abdelrahman Daghash**  
+Cloud DevOps Engineer — NTI DevOps Training Program, iVolve Technologies
+
+## 📬 Contact
+
+- 🐙 [GitHub](https://github.com/Abdelrahmandaghash)
+- 📧 3bdelrahmandaghash@gmail.com
+- 🔗 [Project repository](https://github.com/Abdelrahmandaghash/CloudDevOpsProject)

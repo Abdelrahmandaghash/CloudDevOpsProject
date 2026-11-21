@@ -1,8 +1,10 @@
-# `public/css/` — stylesheet
+# 🎨 Frontend Stylesheet
 
 > One stylesheet drives the entire frontend look and feel.
 
-## Contents
+---
+
+## 📁 Project Structure
 
 | File | Purpose |
 |------|---------|
@@ -10,7 +12,9 @@
 
 It is referenced by all three EJS templates through `/css/style.css` and requires no build step.
 
-## Related
+---
+
+## 🔗 Related
 
 - [static assets](../README.md)
 - [EJS views](../../views/README.md)
