@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: auth
-          image: 020139096861.dkr.ecr.us-east-1.amazonaws.com/auth:latest   # Jenkins updates this line
+          image: 020139096861.dkr.ecr.us-east-1.amazonaws.com/auth:2
           ports:
             - containerPort: 5000      # the Flask server listens on 5000
           envFrom:
