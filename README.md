@@ -1,38 +1,68 @@
-# CloudDevOpsProject — iVolve on EKS
+# CloudDevOpsProject
 
-> **NTI Final Project** — a complete GitOps delivery pipeline for the iVolve training platform:
-> **Docker** packages the app, **Terraform** builds the AWS cloud, **Ansible** configures the CI server,
-> **Jenkins** builds & scans the images, and **ArgoCD** deploys them to **EKS** — automatically, on every push.
+> **NTI Final Project** — a complete GitOps delivery pipeline for the **iVolve** training platform.
+> **Docker** packages the app, **Terraform** builds the AWS infrastructure, **Ansible** configures the Jenkins server,
+> **Jenkins** builds & scans the images, and **ArgoCD** deploys them to **Amazon EKS** — automatically, on every push.
 
-![Terraform](https://img.shields.io/badge/Terraform-7B42BC?logo=terraform&logoColor=white&style=flat-square)
-![Ansible](https://img.shields.io/badge/Ansible-EE0000?logo=ansible&logoColor=white&style=flat-square)
-![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white&style=flat-square)
-![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?logo=kubernetes&logoColor=white&style=flat-square)
-![Jenkins](https://img.shields.io/badge/Jenkins-D24939?logo=jenkins&logoColor=white&style=flat-square)
-![ArgoCD](https://img.shields.io/badge/ArgoCD-EF7B4D?logo=argo&logoColor=white&style=flat-square)
-![AWS](https://img.shields.io/badge/AWS-FF9900?logo=amazon-aws&logoColor=black&style=flat-square)
-![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?logo=ubuntu&logoColor=white&style=flat-square)
+![Terraform](https://img.shields.io/badge/Terraform-IaC-7B42BC?logo=terraform&logoColor=white&style=flat-square)
+![Ansible](https://img.shields.io/badge/Ansible-Config-EE0000?logo=ansible&logoColor=white&style=flat-square)
+![Docker](https://img.shields.io/badge/Docker-Containers-2496ED?logo=docker&logoColor=white&style=flat-square)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-EKS-326CE5?logo=kubernetes&logoColor=white&style=flat-square)
+![Jenkins](https://img.shields.io/badge/Jenkins-CI%2FCD-D24939?logo=jenkins&logoColor=white&style=flat-square)
+![ArgoCD](https://img.shields.io/badge/ArgoCD-GitOps-EF7B4D?logo=argo&logoColor=white&style=flat-square)
+![AWS](https://img.shields.io/badge/AWS-us--east--1-FF9900?logo=amazon-aws&logoColor=black&style=flat-square)
+![Docs](https://img.shields.io/badge/documentation-complete-2EA44F?logo=readme&logoColor=white&style=flat-square)
 
-**Status:** deployed end-to-end and verified live — `terraform apply` → Ansible `failed=0` → 3 green Jenkins
-pipelines → ArgoCD `Synced / Healthy` → app reachable through the ingress Load Balancer.
-
-![iVolve app running on EKS](Screenshots/13-app-login-page.png)
+**Repository:** https://github.com/Abdelrahmandaghash/CloudDevOpsProject
 
 ---
 
-## Table of contents
+## Contents
 
-1. [Architecture](#architecture)
-2. [Tech stack](#tech-stack)
-3. [NTI task coverage](#nti-final-project--task-coverage)
-4. [Repository structure](#repository-structure)
-5. [How the pipeline works](#how-the-pipeline-works)
-6. [Evidence — the full walkthrough](#evidence--the-full-walkthrough)
-7. [Run it locally (Docker Compose)](#run-it-locally-docker-compose)
-8. [Deploy to AWS — full guide](#deploy-to-aws--full-guide)
-9. [Troubleshooting — real failures we hit & fixed](#troubleshooting--real-failures-we-hit--fixed)
-10. [Cleanup & destroy](#cleanup--destroy)
-11. [Cost notes](#cost-notes)
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Repository map](#repository-map)
+- [NTI task coverage](#nti-task-coverage)
+- [Prerequisites](#prerequisites)
+- [Step-by-step deployment guide](#step-by-step-deployment-guide)
+- [Verification commands](#verification-commands)
+- [Clean up](#clean-up)
+- [Cost notes](#cost-notes)
+
+---
+
+## Overview
+
+This project takes the **iVolve** application from source code to a live, self-healing deployment on Kubernetes:
+
+1. The application is made of three independent microservices, each with its own Dockerfile.
+2. A single `docker-compose.yml` runs the whole stack locally, database included.
+3. Terraform creates the complete AWS environment: VPC, Jenkins EC2, EKS cluster, ECR repositories and S3 state backend.
+4. Ansible turns the empty Jenkins EC2 into a fully equipped CI server (Java, Jenkins, Docker, AWS CLI, Trivy).
+5. Jenkins builds each image, scans it for vulnerabilities, pushes it to ECR, and writes the new image tag back into the Kubernetes manifests in GitHub.
+6. ArgoCD watches those manifests and syncs the cluster automatically — Git is the single source of truth.
+
+### The application
+
+| Service | Technology | Port | Responsibility |
+|---------|-----------|------|----------------|
+| `frontend` | Node.js 22 / Express 5 / EJS | 3000 | Web UI; proxies calls to the two APIs |
+| `auth` | Python 3.12 / Flask 3 | 5000 | Signup & login; the only service that uses MySQL |
+| `roadmap` | Java 21 / Spring Boot 3.5 | 8080 | Serves the DevOps roadmap data |
+| `mysql` | MySQL 8 (StatefulSet + EBS) | 3306 | Persistent database for the auth service |
+
+### The platform
+
+| Layer | Tool | What it does here |
+|-------|------|-------------------|
+| Containerization | Docker, Compose | Builds images; runs the app locally |
+| Infrastructure | Terraform | VPC, subnets, NAT, Jenkins EC2, EKS (2 nodes / 2 AZs), ECR, EBS CSI via IRSA |
+| Configuration | Ansible | Java 21, Jenkins, Docker, Git, AWS CLI, Trivy on the Jenkins server |
+| Continuous integration | Jenkins + shared library | 6-stage pipeline per microservice |
+| Security | Trivy | Scans images for HIGH/CRITICAL vulnerabilities before pushing |
+| Orchestration | Kubernetes (EKS) | Runs all four workloads in the `ivolve` namespace |
+| Ingress | ingress-nginx | Single AWS Load Balancer exposing the frontend |
+| GitOps | ArgoCD | Auto-syncs `k8s/` from GitHub into the cluster |
 
 ---
 
@@ -40,236 +70,144 @@ pipelines → ArgoCD `Synced / Healthy` → app reachable through the ingress Lo
 
 ```
  Developer ──push──> GitHub repo <───────────────┐
-                         │                        │ 4. Jenkins pushes the new
-                         │ 1. Jenkins pipeline    │    image tag into k8s/ files
+                         │                        │  Jenkins writes the new
+                         │ 1. Jenkins pipeline    │  image tag into k8s/*.yaml
                          ▼                        │
     ┌──────────── Jenkins (EC2 t3.small) ────────┘
-    │  Checkout → Build → Trivy scan → Push → Delete local image
+    │  Build → Trivy scan → Push ECR → Delete local image
+    │                      → Update manifests → Push manifests
     │                      │
-    │                      ▼ 2. image stored in
-    │                 AWS ECR (frontend, auth, roadmap)
+    │                      ▼ 2. images stored in
+    │              AWS ECR (frontend / auth / roadmap)
     │
-    └─ 3. ArgoCD (inside EKS) watches the k8s/ folder in GitHub
-                 │ and syncs any change automatically
+    └─ 3. ArgoCD (inside EKS) watches k8s/ in GitHub
+                 │  and syncs the cluster automatically
                  ▼
-    ┌────────────── AWS VPC (2 public + 2 private subnets) ──┐
-    │ Public subnets : Jenkins EC2, NAT GW, Load Balancer    │
-    │ Private subnets: EKS worker node 1 (AZ-a)              │
-    │                  EKS worker node 2 (AZ-b)              │
-    │   namespace "ivolve":                                  │
-    │     Ingress (nginx) → frontend → auth → MySQL          │
-    │                        └──────→ roadmap                │
-    │                                    (StatefulSet + EBS) │
-    └────────────────────────────────────────────────────────┘
-```
-
-**The 3 microservices**
-
-| Service | Technology | Port | Responsibility |
-|---------|-----------|------|----------------|
-| `frontend` | Node.js / Express | 3000 | UI, calls the two services below |
-| `auth` | Python / Flask | 5000 | signup / login — the only service using MySQL |
-| `roadmap` | Java / Spring Boot | 8080 | serves the DevOps roadmap data |
-| `mysql` | MySQL 8 (StatefulSet) | 3306 | database on an EBS PVC (`ebs-sc` StorageClass) |
-
----
-
-## Tech stack
-
-| Tool | What it does in this project |
-|------|------------------------------|
-| **Docker / docker-compose** | Packages each service; runs the whole app + database on your laptop |
-| **Terraform** | Creates the VPC, Jenkins EC2, EKS cluster (2 nodes / 2 AZs), ECR repos, EBS-CSI IRSA — state in S3 |
-| **Ansible** | Configures the Jenkins server from scratch: Java, Jenkins, Docker, Trivy (dynamic AWS inventory) |
-| **Kubernetes (EKS)** | Runs the frontend, auth, roadmap and MySQL in the `ivolve` namespace |
-| **Jenkins** | 3 pipelines: build → Trivy scan → push to ECR → update manifests → push to GitHub |
-| **ArgoCD** | GitOps: watches `k8s/` in GitHub and syncs the cluster automatically |
-| **Trivy** | Vulnerability scan of every image before it is pushed |
-| **ingress-nginx** | Exposes the app through one AWS Load Balancer |
-
----
-
-## NTI Final Project — task coverage
-
-| # | PDF requirement | Where it lives in this repo | Evidence |
-|---|----------------|----------------------------|----------|
-| **1** | GitHub repository with README, link delivered | this repository + [`README.md`](README.md) | the repo itself |
-| **2** | Docker Compose builds & tests the app + DB locally | [`docker-compose.yml`](docker-compose.yml) + [`app/`](app/) | [Run locally](#run-it-locally-docker-compose) |
-| **3** | Terraform: network, server, EKS (2 nodes / 2 AZs), ECR, S3 backend | [`terraform/`](terraform/) — modules `network`, `server`, `eks`, `ecr` + `backend.tf` | [`01`](Screenshots/01-terraform-apply-complete.png) [`03`](Screenshots/03-ecr-repositories.png) [`04`](Screenshots/04-eks-nodes-ready.png) |
-| **4** | Ansible: roles + dynamic inventory for the Jenkins EC2 | [`ansible/`](ansible/) — roles `java`, `jenkins`, `tools` + `aws_ec2.yml` | [`02`](Screenshots/02-ansible-playbook-success.png) |
-| **5** | K8s: namespace, Deployments, Services, StatefulSet, headless Service, StorageClass, ConfigMap, Secret, Ingress | [`k8s/`](k8s/) — 13 YAML files | [`05`](Screenshots/05-ingress-nginx-running.png) [`12`](Screenshots/12-ingress-elb-and-pods.png) |
-| **6** | Jenkins: pipeline per service, multi-stage, shared library | [`jenkins/*/Jenkinsfile`](jenkins/) + [`vars/`](vars/) | [`06`](Screenshots/06-jenkins-jobs-all-green.png) [`07`](Screenshots/07-pipeline-frontend.png) [`08`](Screenshots/08-pipeline-auth.png) [`09`](Screenshots/09-pipeline-roadmap.png) |
-| **7** | ArgoCD syncs & deploys the app | [`argocd/application.yaml`](argocd/application.yaml) | [`10`](Screenshots/10-argocd-install.png) [`11`](Screenshots/11-argocd-application-healthy.png) |
-| **8** | Documentation: setup + architecture | this README + [`Screenshots/`](Screenshots/) gallery | [`13`](Screenshots/13-app-login-page.png) [`14`](Screenshots/14-troubleshooting-gpg-failure.png) [`15`](Screenshots/15-troubleshooting-free-tier-error.png) |
-
-> Full screenshot gallery: [`Screenshots/`](Screenshots/) — 15 numbered evidence images, referenced step by step below.
-
----
-
-## Repository structure
-
-```
-CloudDevOpsProject/
-├── app/                  application source code
-│   ├── frontend/         Node.js / Express  (port 3000)
-│   ├── auth-service/     Python / Flask     (port 5000)
-│   └── roadmap-service/  Java / Spring Boot (port 8080)
-├── docker-compose.yml    local run: MySQL + auth + roadmap + frontend
-├── terraform/            modules: network, server, eks, ecr  (+ S3 backend)
-├── ansible/              dynamic inventory (aws_ec2.yml), playbook, roles: java, jenkins, tools
-├── k8s/                  all 13 Kubernetes YAML files
-├── jenkins/              Jenkinsfile for frontend, auth and roadmap
-├── vars/                 Jenkins shared library (buildImage, scanImage, pushImage, …)
-├── argocd/               ArgoCD Application manifest
-├── Screenshots/          numbered evidence gallery (01 … 15)
-└── README.md             this file
+    ┌────────────── AWS VPC 10.0.0.0/16 ──────────────────────┐
+    │ Public subnets (2 AZs) : Jenkins EC2, NAT GW, Load Balancer
+    │ Private subnets (2 AZs): EKS worker nodes (t3.small × 2)
+    │
+    │   namespace "ivolve":
+    │     Ingress (nginx) ──> frontend ──> auth ──> MySQL
+    │                             └─────> roadmap
+    │                                      (StatefulSet + EBS 1 Gi)
+    └──────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## How the pipeline works
+## Repository map
 
-1. You push to GitHub — or click **Build Now** in Jenkins.
-2. Jenkins runs the service's pipeline: **Checkout → Build image → Trivy scan → Push to ECR → Delete local image → Update manifests → Push manifests**.
-3. Jenkins rewrites the image tag inside `k8s/<service>-deployment.yaml` and commits it back to GitHub.
-4. ArgoCD notices the change in GitHub and rolls the new pods out in the cluster — no human touching `kubectl`.
+Every folder has its own README with a complete description of its contents.
+
+| Folder | Contains | Details |
+|--------|----------|---------|
+| [`app/`](app/README.md) | The three microservice source trees | [frontend](app/frontend/README.md) · [auth](app/auth-service/README.md) · [roadmap](app/roadmap-service/README.md) |
+| [`terraform/`](terraform/README.md) | Infrastructure code + S3 backend | [modules](terraform/modules/README.md): [network](terraform/modules/network/README.md) · [server](terraform/modules/server/README.md) · [eks](terraform/modules/eks/README.md) · [ecr](terraform/modules/ecr/README.md) |
+| [`ansible/`](ansible/README.md) | Dynamic inventory, playbook, roles | [roles](ansible/roles/README.md): [java](ansible/roles/java/README.md) · [jenkins](ansible/roles/jenkins/README.md) · [tools](ansible/roles/tools/README.md) |
+| [`jenkins/`](jenkins/README.md) | One pipeline per service | [frontend](jenkins/frontend/README.md) · [auth](jenkins/auth/README.md) · [roadmap](jenkins/roadmap/README.md) |
+| [`vars/`](vars/README.md) | Jenkins shared-library steps | build, scan, push, delete, update & push manifests |
+| [`k8s/`](k8s/README.md) | All 13 Kubernetes manifests | namespace, workloads, services, storage, config, ingress |
+| [`argocd/`](argocd/README.md) | ArgoCD Application manifest | `ivolve-app`, automated sync |
+| [`Screenshots/`](Screenshots/README.md) | Deployment evidence gallery | numbered step-by-step captures |
 
 ---
 
-## Evidence — the full walkthrough
+## NTI task coverage
 
-### 1 · Infrastructure as Code — Terraform (Task 3)
+| # | Requirement | Where it is implemented |
+|---|-------------|-------------------------|
+| **1** | GitHub repository with README and delivered link | this repository |
+| **2** | Docker Compose builds & tests app + DB locally | [`docker-compose.yml`](docker-compose.yml), [`app/`](app/README.md) |
+| **3** | Terraform: network, server, EKS (2 nodes / 2 AZs), ECR, S3 backend | [`terraform/`](terraform/README.md) |
+| **4** | Ansible: roles + dynamic inventory for the Jenkins EC2 | [`ansible/`](ansible/README.md) |
+| **5** | Kubernetes: namespace, Deployments, Services, StatefulSet, headless Service, StorageClass, ConfigMap, Secret, Ingress | [`k8s/`](k8s/README.md) |
+| **6** | Jenkins: one pipeline per service, shared library | [`jenkins/`](jenkins/README.md), [`vars/`](vars/README.md) |
+| **7** | ArgoCD syncs and deploys the app | [`argocd/`](argocd/README.md) |
+| **8** | Documentation: setup + architecture | this README and the per-folder READMEs |
+
+---
+
+## Prerequisites
+
+All commands below are written as they were executed on **WSL (Ubuntu 24.04)**.
 
 ```bash
-cd terraform
-terraform init
-terraform apply -var key_name=ivolve-key
+sudo apt update
+sudo apt install -y git curl unzip python3-pip
+
+pip install boto3
+ansible-galaxy collection install amazon.aws
+
+# Install Docker, Terraform, kubectl and AWS CLI v2 from their official sources,
+# then configure the AWS credentials/profile used by Terraform and Ansible:
+aws configure
 ```
 
-**`Apply complete! Resources: 36 added, 0 changed, 0 destroyed.`** — VPC + subnets, Jenkins EC2,
-EKS cluster with 2 nodes across 2 AZs, EBS-CSI addon (IRSA), 3 ECR repositories, all outputs printed:
+You also need:
 
-![Terraform apply complete — 36 resources](Screenshots/01-terraform-apply-complete.png)
+- an **AWS account** with permission to create VPC, EC2, EKS, ECR, IAM and S3 resources;
+- a **GitHub account** and a **Personal Access Token** with `repo` scope;
+- an existing **EC2 key pair** name (used for SSH to the Jenkins server).
 
-The three ECR repositories (`auth`, `frontend`, `roadmap`) created by the `ecr` module:
-
-![ECR private repositories](Screenshots/03-ecr-repositories.png)
-
-### 2 · Configuration Management — Ansible (Task 4)
-
-```bash
-cd ansible
-ansible-inventory --graph        # dynamic AWS inventory finds the Jenkins EC2
-ansible-playbook playbook.yml
-```
-
-Every task green, **`PLAY RECAP … ok=13  changed=…  unreachable=0  failed=0`** —
-Java, Jenkins, Docker, Git, AWS CLI and Trivy installed and started:
-
-![Ansible playbook PLAY RECAP failed=0](Screenshots/02-ansible-playbook-success.png)
-
-### 3 · Continuous Integration — Jenkins (Task 6)
-
-All three jobs build and go green:
-
-![Jenkins dashboard — auth, frontend, roadmap all successful](Screenshots/06-jenkins-jobs-all-green.png)
-
-Each pipeline runs the same 7 stages — here is every service, stage view complete:
-
-**`frontend`**
-
-![Jenkins frontend pipeline all stages green](Screenshots/07-pipeline-frontend.png)
-
-**`auth`**
-
-![Jenkins auth pipeline all stages green](Screenshots/08-pipeline-auth.png)
-
-**`roadmap`**
-
-![Jenkins roadmap pipeline all stages green](Screenshots/09-pipeline-roadmap.png)
-
-### 4 · Kubernetes cluster (Task 5)
-
-```bash
-aws eks update-kubeconfig --name ivolve-cluster --region us-east-1
-kubectl get nodes                      # 2 nodes Ready
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.2/deploy/static/provider/aws/deploy.yaml
-```
-
-![kubectl get nodes — 2 Ready, ingress-nginx applied](Screenshots/04-eks-nodes-ready.png)
-
-![ingress-nginx controller pod Running](Screenshots/05-ingress-nginx-running.png)
-
-### 5 · GitOps — ArgoCD (Task 7)
-
-```bash
-kubectl create namespace argocd
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-kubectl apply -f argocd/application.yaml      # creates the "ivolve-app" application
-```
-
-![ArgoCD installed, ivolve-app created, pods Running](Screenshots/10-argocd-install.png)
-
-The application reaches **`Healthy` + `Synced`** — every resource green, 13 Synced / 17 Healthy,
-auto-sync enabled (last sync by `jenkins@ivolve.com`):
-
-![ArgoCD ivolve-app Healthy and Synced](Screenshots/11-argocd-application-healthy.png)
-
-### 6 · The app is live
-
-The ingress hands out an AWS Load Balancer address, and all 4 pods are `Running`:
-
-![Ingress ELB address and 4 running pods](Screenshots/12-ingress-elb-and-pods.png)
-
-Open that address in a browser — the iVolve login page, served from EKS:
-
-![iVolve app login page served from EKS](Screenshots/13-app-login-page.png)
-
-Log in and the full roadmap appears. **End-to-end: `git push` → browser.** 🎉
+> **Free tier:** every EC2 instance type in this project is `t3.small` — keep it that way.
 
 ---
 
-## Run it locally (Docker Compose)
+## Step-by-step deployment guide
 
-**Requirements:** Git, Docker (+ docker-compose).
+### Step 1 — Create the GitHub repository
+
+1. Create a repository named `CloudDevOpsProject` on GitHub and clone it.
+2. Copy this project into the clone (including the hidden `.gitignore`).
+3. Push the first commit:
+
+```bash
+git add .
+git commit -m "Initial commit: full DevOps pipeline"
+git push
+```
+
+### Step 2 — Run the application locally (before touching AWS)
 
 ```bash
 docker compose up --build
 ```
 
-This starts MySQL, `auth-service`, `roadmap-service` and `frontend` with one command —
-exactly what Task 2 asks for: the app **and** its database, buildable and testable offline.
+Compose builds all three images and starts MySQL first, waits for its healthcheck, then starts
+`auth`, `roadmap` and `frontend`. Open **http://localhost** and sign up / log in to check that the
+frontend, auth service and database talk to each other. Stop with `docker compose down`
+(add `-v` to delete the database volume).
 
-Open **http://localhost** (frontend), stop with `docker compose down`, wipe data with `docker compose down -v`.
-
----
-
-## Deploy to AWS — full guide
-
-**Requirements (on your machine / WSL):** Git, Docker, Terraform, Ansible
-(`pip install boto3`, `ansible-galaxy collection install amazon.aws`), AWS CLI (`aws configure`), kubectl.
-
-> This project was built and verified entirely inside **WSL (Ubuntu 24.04)**.
-
-### Step 1 — GitHub repository
-
-1. Create a repository named **CloudDevOpsProject** and clone it.
-2. Copy this project in, then put the iVolve source into `app/` (`frontend`, `auth-service`, `roadmap-service`).
-3. `git add . && git commit -m "first commit" && git push`.
-
-### Step 2 — Run locally first
+### Step 3 — Prepare the S3 backend and key pair
 
 ```bash
-docker compose up --build     # verify everything works before touching AWS
+# Bucket for the Terraform state (use a globally unique name)
+aws s3api create-bucket --bucket ivolve-terraform-state-020139096861 --region us-east-1
+aws s3api put-bucket-versioning \
+  --bucket ivolve-terraform-state-020139096861 \
+  --versioning-configuration Status=Enabled
+aws s3api put-bucket-encryption \
+  --bucket ivolve-terraform-state-020139096861 \
+  --server-side-encryption-configuration \
+  '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}'
+
+# Key pair for SSH access to the Jenkins EC2
+aws ec2 create-key-pair --key-name ivolve-key \
+  --query 'KeyMaterial' --output text > ~/ivolve-key.pem
+chmod 400 ~/ivolve-key.pem
 ```
 
-### Step 3 — AWS infrastructure (Terraform) — *Task 3*
+Set the bucket name in [`terraform/backend.tf`](terraform/backend.tf). Then replace the example
+AWS account ID (`020139096861`) and GitHub username (`Abdelrahmandaghash`) in:
 
-1. Create an **S3 bucket** for the state file and an **EC2 key pair** (e.g. `ivolve-key`), download the `.pem`.
-2. Put the bucket name in `terraform/backend.tf`.
-3. Replace the placeholders `020139096861` (your AWS account) and `Abdelrahmandaghash` (your GitHub user)
-   in `k8s/*-deployment.yaml`, `jenkins/*/Jenkinsfile` and `argocd/application.yaml`, then push.
-4. Apply:
+- `k8s/*-deployment.yaml` (ECR image URLs),
+- `jenkins/*/Jenkinsfile` (ECR registry and repository URL),
+- `argocd/application.yaml` (Git repository URL).
+
+Commit and push those changes before continuing.
+
+### Step 4 — Create the AWS infrastructure with Terraform
 
 ```bash
 cd terraform
@@ -277,49 +215,73 @@ terraform init
 terraform apply -var key_name=ivolve-key
 ```
 
-Takes ~15 minutes. Note the outputs: **`jenkins_public_ip`**, **`ecr_urls`**, **`eks_cluster_name`**.
+This creates **36 resources** in about 15 minutes: the VPC, two public and two private subnets,
+an Internet Gateway, NAT Gateway, the Jenkins EC2 with its IAM role, the EKS cluster and its two
+`t3.small` worker nodes, the EBS CSI driver with IRSA, and three ECR repositories.
 
-> ⚠️ On a **free-tier account every instance type must be `t3.small`** — see
-> [troubleshooting](#troubleshooting--real-failures-we-hit--fixed).
+Save the outputs — you need the Jenkins IP and ECR URLs in the following steps:
 
-### Step 4 — Configure the Jenkins server (Ansible) — *Task 4*
+```bash
+terraform output jenkins_public_ip
+terraform output ecr_urls
+terraform output eks_cluster_name
+```
 
-1. Put your `.pem` path in `ansible/ansible.cfg` (default `~/ivolve-key.pem`).
-2. Run:
+### Step 5 — Configure the Jenkins server with Ansible
+
+The dynamic inventory finds the instance tagged `Name=jenkins-server` automatically. Set the path
+to your `.pem` file in [`ansible/ansible.cfg`](ansible/ansible.cfg), then:
 
 ```bash
 cd ansible
-ansible-inventory --graph      # dynamic inventory → the Jenkins EC2 by tag
+ansible-inventory --graph
 ansible-playbook playbook.yml
 ```
 
-3. Open `http://<jenkins_public_ip>:8080` and grab the initial password:
+The playbook installs Java 21, Jenkins, Docker, Git, AWS CLI and Trivy, then starts and enables
+Jenkins and Docker. A successful run ends with `failed=0` in the `PLAY RECAP`.
+
+Get the initial admin password and open the UI:
 
 ```bash
-ssh -i ~/ivolve-key.pem ubuntu@<jenkins_public_ip> "sudo cat /var/lib/jenkins/secrets/initialAdminPassword"
+ssh -i ~/ivolve-key.pem ubuntu@<JENKINS_PUBLIC_IP> \
+  "sudo cat /var/lib/jenkins/secrets/initialAdminPassword"
 ```
 
-### Step 5 — Connect to the cluster (Task 5)
+Browse to `http://<JENKINS_PUBLIC_IP>:8080` and log in with user `admin`.
+
+### Step 6 — Connect kubectl and install the ingress controller
 
 ```bash
 aws eks update-kubeconfig --name ivolve-cluster --region us-east-1
-kubectl get nodes        # expect 2 Ready
+kubectl get nodes     # two nodes, Ready
+
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.2/deploy/static/provider/aws/deploy.yaml
+kubectl get pods -n ingress-nginx
 ```
 
-### Step 6 — Jenkins setup in the web UI (Task 6)
+### Step 7 — Configure Jenkins in the web UI
 
-1. **Install suggested plugins** (Git, Pipeline, Credentials Binding, Docker).
-2. **Manage Jenkins → Credentials → Add "Username with password"** — ID must be exactly **`github-creds`**,
-   values = your GitHub username + a Personal Access Token with **repo** scope.
-3. **Manage Jenkins → System → Global Trusted Pipeline Libraries** — add a library named
-   **`shared-lib`** (Git → this repo; the `vars/` folder is picked up automatically).
-4. Create three **Pipeline** jobs — `frontend`, `auth`, `roadmap` — each
-   *Pipeline script from SCM* → Git → this repo → Script Path:
-   `jenkins/frontend/Jenkinsfile`, `jenkins/auth/Jenkinsfile`, `jenkins/roadmap/Jenkinsfile`.
-5. **Build Now** on each — every stage should go green (see [evidence](#3--continuous-integration--jenkins-task-6)).
+1. Install the **suggested plugins** and complete the setup wizard.
+2. **Manage Jenkins → Credentials → Add Credentials**: kind *Username with password*,
+   ID exactly **`github-creds`**, username = your GitHub user, password = your PAT (`repo` scope).
+3. **Manage Jenkins → System → Global Trusted Pipeline Libraries**: add a library named **`shared-lib`**,
+   Git, this repository URL. The library code lives in `vars/`.
+4. Create three **Pipeline** jobs: `frontend`, `auth`, `roadmap`. For each choose
+   *Pipeline script from SCM → Git → this repository*, and set the Script Path:
 
-### Step 7 — ArgoCD (Task 7)
+   | Job | Script path |
+   |-----|-------------|
+   | `frontend` | `jenkins/frontend/Jenkinsfile` |
+   | `auth` | `jenkins/auth/Jenkinsfile` |
+   | `roadmap` | `jenkins/roadmap/Jenkinsfile` |
+
+5. Click **Build Now** on each job.
+
+Each run performs six stages: **Build Image → Scan Image → Push Image → Delete Image Locally →
+Update Manifests → Push Manifests**. The last stage commits the new image tag into `k8s/` on GitHub.
+
+### Step 8 — Install ArgoCD and create the application
 
 ```bash
 kubectl create namespace argocd
@@ -327,101 +289,69 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 kubectl apply -f argocd/application.yaml
 ```
 
-ArgoCD now watches `k8s/` in GitHub and deploys into the `ivolve` namespace.
+`ivolve-app` now watches the `k8s/` folder on `main`, deploys into the `ivolve` namespace, and
+automatically prunes and self-heals drifting resources.
+
+Open the UI:
 
 ```bash
-kubectl port-forward svc/argocd-server -n argocd 8081:443     # UI on https://localhost:8081
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+kubectl port-forward svc/argocd-server -n argocd 8081:443
+# in another terminal:
+kubectl -n argocd get secret argocd-initial-admin-secret \
+  -o jsonpath="{.data.password}" | base64 -d
 ```
 
-Username: `admin`.
+Log in at `https://localhost:8081` with user `admin` and that password.
 
-### Step 8 — Open the app (Task 5 & 7)
+### Step 9 — Open the application
 
 ```bash
 kubectl get ingress -n ivolve
-kubectl get pods -n ivolve      # expect auth, frontend, roadmap, mysql — all Running
+kubectl get pods -n ivolve
 ```
 
-Open the `ADDRESS` shown by the ingress in your browser. Done. ✅
+Copy the `ADDRESS` of `frontend-ingress` into a browser. The frontend, auth service, roadmap
+service and MySQL pods should all be `Running`. From here on, every Jenkins build updates an image
+tag on GitHub and ArgoCD rolls out the new version without any manual intervention.
 
 ---
 
-## Troubleshooting — real failures we hit & fixed
+## Verification commands
 
-### 1 · `InvalidParameterCombination: not eligible for Free Tier`
-
-![Terraform free tier error](Screenshots/15-troubleshooting-free-tier-error.png)
-
-**Cause:** the config asked for `t3.medium`, which a free-tier account may not launch.
-**Fix:** every instance type must be **`t3.small`**:
-
-```bash
-grep -rn "t3\." terraform/       # all hits must be t3.small
-```
-
-Ctrl+C out of the stuck apply, fix, re-run — it is safe (the node group keeps creating in the background
-until you cancel, then a fresh apply finishes in ~15 min).
-
-### 2 · Jenkins repo GPG: `NO_PUBKEY 7198F4B714ABFC68`
-
-![Ansible failed on expired Jenkins GPG key](Screenshots/14-troubleshooting-gpg-failure.png)
-
-**Cause:** the 2023 Jenkins apt signing key **expired 2026-03-26**, so `apt update` rejects the repo.
-**Fix:** use the current key — `jenkins.io-2026.key` (see `ansible/roles/jenkins/tasks/main.yml`),
-downloaded with `force: yes` so re-runs refresh it.
-
-### 3 · Jenkins won't start: systemd start rate-limit
-
-**Cause:** several failed starts in a row latch systemd's `StartLimitBurst=5 / 5m`,
-so even a fixed config gets `start request repeated too quickly`.
-**Fix:** reset the latch before starting (already in the playbook):
-
-```bash
-sudo systemctl reset-failed jenkins && sudo systemctl start jenkins
-```
-
-### 4 · Jenkins fails with a Java error
-
-**Cause:** current Jenkins packages require **Java 21**; older guides say Java 17.
-**Fix:** `openjdk-21-jre` (see `ansible/roles/java/tasks/main.yml`).
-
-### 5 · Build fails at `git push` / ECR auth
-
-Credential ID must be **exactly** `github-creds` (lowercase, no spaces) and the PAT must have **repo**
-scope and not be expired. For ECR, the `aws` CLI installed by Ansible + the instance role handle auth —
-check `aws ecr get-login-password` works on the server.
+| Check | Command | Expected result |
+|-------|---------|-----------------|
+| Infrastructure | `cd terraform && terraform output` | Jenkins IP, ECR URLs, cluster name |
+| Server setup | `cd ansible && ansible-playbook playbook.yml --check` | no failed tasks |
+| Jenkins jobs | Jenkins dashboard | `frontend`, `auth`, `roadmap` green |
+| Cluster | `kubectl get nodes` | 2 nodes `Ready` |
+| Workloads | `kubectl get pods -n ivolve` | 4 pods `Running` |
+| Ingress | `kubectl get ingress -n ivolve` | nginx Load Balancer address |
+| GitOps | ArgoCD UI → `ivolve-app` | `Synced` and `Healthy` |
+| Application | open the ingress address | iVolve login / roadmap pages |
 
 ---
 
-## Cleanup & destroy
+## Clean up
 
-**Avoid AWS charges — destroy the same day you finish:**
+Destroy the infrastructure when you are finished to avoid AWS charges. Delete the ingress first so
+the Load Balancer is released cleanly:
 
 ```bash
-kubectl delete ingress --all -n ivolve      # release the Load Balancer first
+kubectl delete ingress --all -n ivolve
 cd terraform
 terraform destroy -var key_name=ivolve-key
 ```
 
-The S3 state bucket and the EC2 key pair are kept (they are created outside Terraform) —
-re-running `terraform apply` reuses them.
+The S3 state bucket and the EC2 key pair are created outside Terraform and remain available for a
+future deployment.
 
 ---
 
 ## Cost notes
 
-Everything runs on **free-tier-eligible `t3.small`** instances:
-
-| Resource | Notes |
-|----------|-------|
-| Jenkins EC2 `t3.small` | 1× public subnet |
-| EKS control plane | ~$0.10/h |
-| 2× `t3.small` worker nodes | private subnets, one per AZ |
-| NAT Gateway + Load Balancer | hourly + data processing |
-| EBS volumes, ECR, S3 | pennies |
-
-**≈ $0.30–0.40 / hour** while up. Always `terraform destroy` when you are done.
+All compute is free-tier-eligible **`t3.small`**: one Jenkins EC2 and two EKS worker nodes, plus
+the EKS control plane, NAT Gateway, Load Balancer, EBS volumes, ECR and S3. Expect roughly
+**$0.30–0.40 per hour** while the stack is up — run `terraform destroy` when you are done.
 
 ---
 
